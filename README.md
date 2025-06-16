@@ -1,6 +1,65 @@
 # Laboratorio AI Local
 
-Este proyecto configura un entorno local para experimentar con diferentes herramientas de IA, incluyendo Ollama, OpenWebUI, n8n, Floowise, PostgreSQL y Qdrant.
+[![GitHub Actions](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml/badge.svg)](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml)
+[![Licencia](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)
+
+## 📋 Información del Repositorio
+
+Este repositorio contiene la configuración y scripts necesarios para desplegar un laboratorio de Inteligencia Artificial local utilizando Docker. El proyecto está diseñado para proporcionar un entorno completo y aislado para experimentar con diferentes modelos de IA y herramientas de procesamiento de datos.
+
+### 🚀 Características Principales
+
+- **Entorno Aislado**: Todos los servicios se ejecutan en contenedores Docker
+- **Fácil Configuración**: Scripts automatizados para la configuración inicial
+- **Backup Automático**: Sistema de respaldo para datos y configuraciones
+- **Seguridad**: Configuración segura por defecto
+- **Escalabilidad**: Fácil de extender con nuevos servicios
+
+### 🛠️ Tecnologías Utilizadas
+
+- Docker y Docker Compose
+- PostgreSQL para almacenamiento de datos
+- Qdrant para búsqueda vectorial
+- Ollama para modelos de lenguaje local
+- N8N para automatización
+- Floowise para procesamiento de datos
+- OpenWebUI para interfaz web
+
+### 📦 Estructura del Repositorio
+
+```
+laboratorioAI/
+├── .github/                    # Configuración de GitHub Actions
+├── scripts/                    # Scripts de mantenimiento
+├── postgres/                   # Configuración de PostgreSQL
+├── qdrant/                     # Configuración de Qdrant
+├── ollama/                     # Configuración de Ollama
+├── n8n/                        # Configuración de N8N
+├── floowise/                   # Configuración de Floowise
+├── openwebui/                  # Configuración de OpenWebUI
+├── docker-compose.yml          # Configuración de Docker Compose
+├── .gitignore                  # Archivos ignorados por Git
+├── LICENSE                     # Licencia del proyecto
+└── README.md                   # Este archivo
+```
+
+### 🤝 Contribuciones
+
+Las contribuciones son bienvenidas. Por favor, lee nuestras guías de contribución antes de enviar un pull request:
+
+1. Haz fork del repositorio
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+### 📝 Licencia
+
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+### 👥 Autores
+
+- **Edisson Giraldo** - *Desarrollo inicial* - [EdissonGirald0](https://github.com/EdissonGirald0)
 
 ## Requisitos Previos
 
