@@ -1,0 +1,72 @@
+#!/bin/bash
+
+# Colores para mensajes
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+echo -e "${YELLOW}Iniciando configuración del entorno...${NC}"
+
+# Generar claves de seguridad
+N8N_ENCRYPTION_KEY=$(openssl rand -base64 32)
+WEBUI_SECRET_KEY=$(openssl rand -base64 32)
+QDRANT_API_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
+
+# Generar contraseñas
+POSTGRES_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+POSTGRES_NON_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+
+# Crear el archivo .env
+cat > .env << EOL
+# PostgreSQL
+POSTGRES_USER=aiadmin
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+POSTGRES_DB=ailab
+POSTGRES_NON_ROOT_USER=aiadmin
+POSTGRES_NON_ROOT_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+POSTGRES_HOST=host.docker.internal
+POSTGRES_PORT=5432
+
+# Qdrant
+QDRANT_HOST=host.docker.internal
+QDRANT_PORT=6333
+QDRANT_GRPC_PORT=6334
+QDRANT_API_KEY=$QDRANT_API_KEY
+
+# Ollama
+OLLAMA_HOST=host.docker.internal
+OLLAMA_PORT=11434
+
+# OpenWebUI
+OLLAMA_API_BASE_URL=http://host.docker.internal:11434/api
+WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
+WEBUI_HOST=0.0.0.0
+WEBUI_PORT=8080
+
+# n8n
+NODE_ENV=development
+N8N_PROTOCOL=http
+N8N_HOST=localhost
+N8N_PORT=5678
+N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+DB_TYPE=sqlite
+DB_SQLITE_DATABASE=/home/node/.n8n/database.sqlite
+
+# Floowise
+FLOOWISE_HOST=0.0.0.0
+FLOOWISE_PORT=3000
+DATABASE_URL=postgresql://aiadmin:${POSTGRES_NON_ROOT_PASSWORD}@host.docker.internal:5432/ailab
+QDRANT_URL=http://host.docker.internal:6333
+EOL
+
+# Establecer permisos correctos
+chmod 600 .env
+
+echo -e "${GREEN}Archivo .env creado exitosamente${NC}"
+echo -e "${YELLOW}Nota: Las contraseñas y claves se han generado automáticamente.${NC}"
+echo -e "${YELLOW}Guarda estas credenciales en un lugar seguro:${NC}"
+echo -e "POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
+echo -e "POSTGRES_NON_ROOT_PASSWORD: ${POSTGRES_NON_ROOT_PASSWORD}"
+echo -e "N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}"
+echo -e "WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}" 

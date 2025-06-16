@@ -1,0 +1,168 @@
+# Eliminar la línea de versión
+# version: '3.8'
+
+networks:
+  laboratorio_ai:
+    name: laboratorio_ai
+    driver: bridge
+
+volumes:
+  postgres_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/postgres/data
+  qdrant_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/qdrant/data
+  ollama_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/ollama/data
+  n8n_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/n8n/data
+  floowise_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/floowise/data
+  openwebui_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/openwebui/data
+
+services:
+  postgres:
+    image: postgres:16
+    restart: always
+    environment:
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+      - POSTGRES_DB
+      - POSTGRES_NON_ROOT_USER
+      - POSTGRES_NON_ROOT_PASSWORD
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - laboratorio_ai
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    env_file:
+      - .env
+    environment:
+      - QDRANT_API_KEY=${QDRANT_API_KEY}
+    ports:
+      - "6333:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    networks:
+      - laboratorio_ai
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  ollama:
+    image: localaidocker-ollama
+    build:
+      context: .
+      dockerfile: Dockerfile.ollama
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    volumes:
+      - ollama_data:/root/.ollama
+    networks:
+      - laboratorio_ai
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:v0.6.13
+    container_name: openwebui
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=sqlite:////app/data/openwebui.db
+      - OLLAMA_API_BASE_URL=http://host.docker.internal:11434/api
+      - OLLAMA_HOST=host.docker.internal
+      - OLLAMA_PORT=11434
+    ports:
+      - "8080:8080"
+    volumes:
+      - openwebui_data:/app/data
+    depends_on:
+      - ollama
+    networks:
+      - laboratorio_ai
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  n8n:
+    image: docker.n8n.io/n8nio/n8n:latest
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - NODE_ENV=development
+      - N8N_PROTOCOL=http
+      - N8N_HOST=localhost
+      - N8N_PORT=5678
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+      - N8N_USER_MANAGEMENT_DISABLED=true
+      - N8N_DIAGNOSTICS_ENABLED=false
+      - N8N_DIAGNOSTICS_CONFIG_ENABLED=false
+      - N8N_METRICS=false
+      - N8N_DEPLOYMENT_TYPE=main
+      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
+      - N8N_DISABLE_WEBHOOK_DEREGISTRATION_SHUTDOWN=true
+      - N8N_CONFIG_FILES_ENABLED=false
+    networks:
+      - laboratorio_ai
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  floowise:
+    build: ./floowise
+    container_name: floowise
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    volumes:
+      - floowise_data:/app/data
+    depends_on:
+      - postgres
+      - qdrant
+    networks:
+      - laboratorio_ai
+    restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway" 

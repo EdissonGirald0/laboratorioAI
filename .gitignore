@@ -1,0 +1,86 @@
+# Archivos y carpetas de Docker
+*.log
+*.pid
+*.sock
+
+# Volúmenes y datos persistentes
+qdrant_storage/
+openwebui/data/
+ollama/data/
+n8n/data/
+postgres/data/
+localaidocker_*/
+
+# Archivos de entorno y configuración sensible
+.env
+.env.*
+
+# Archivos temporales y de sistema
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Archivos de pruebas y backups
+*.bak
+*.tmp
+
+# Archivos de salida de scripts
+*.out
+
+# Archivos de bases de datos
+*.db
+
+# Archivos de configuración de usuario
+.vscode/
+.idea/
+*.code-workspace
+
+# Otros
+pg_hba.conf
+
+# Directorios de backup
+backups/
+.env_backups/
+
+# Directorios de datos
+postgres/data/
+qdrant/data/
+ollama/data/
+n8n/data/
+floowise/data/
+openwebui/data/
+
+# Archivos de configuración
+.env
+*.env
+.env.*
+
+# Archivos de Docker
+.docker/
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Archivos de logs
+*.log
+logs/
+
+# Archivos temporales
+*.tmp
+*.temp
+tmp/
+temp/
+
+# Archivos de caché
+.cache/
+__pycache__/
+*.pyc 

@@ -1,0 +1,92 @@
+name: Laboratorio AI Local CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v2
+
+    - name: Verificar estructura del proyecto
+      run: |
+        echo "Verificando estructura del proyecto..."
+        test -f docker-compose.yml
+        test -f README.md
+        test -d scripts
+        test -f scripts/init-env.sh
+        test -f scripts/init-data.sh
+        test -f scripts/backup-data.sh
+        test -f scripts/restore-data.sh
+
+    - name: Verificar permisos de scripts
+      run: |
+        echo "Verificando permisos de scripts..."
+        chmod +x scripts/*.sh
+
+    - name: Verificar sintaxis de scripts
+      run: |
+        echo "Verificando sintaxis de scripts..."
+        for script in scripts/*.sh; do
+          bash -n "$script"
+        done
+
+    - name: Verificar docker-compose
+      run: |
+        echo "Verificando sintaxis de docker-compose..."
+        docker-compose config
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Verificar archivos sensibles
+      run: |
+        echo "Verificando que no se suban archivos sensibles..."
+        test ! -f .env
+        test ! -d backups
+        test ! -d postgres/data
+        test ! -d qdrant/data
+        test ! -d ollama/data
+        test ! -d n8n/data
+        test ! -d floowise/data
+        test ! -d openwebui/data
+
+    - name: Verificar .gitignore
+      run: |
+        echo "Verificando .gitignore..."
+        grep -q "backups/" .gitignore
+        grep -q ".env" .gitignore
+        grep -q "postgres/data/" .gitignore
+        grep -q "qdrant/data/" .gitignore
+        grep -q "ollama/data/" .gitignore
+        grep -q "n8n/data/" .gitignore
+        grep -q "floowise/data/" .gitignore
+        grep -q "openwebui/data/" .gitignore
+
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Verificar README
+      run: |
+        echo "Verificando README.md..."
+        test -f README.md
+        grep -q "## Requisitos Previos" README.md
+        grep -q "## Configuración Inicial" README.md
+        grep -q "## Scripts de Mantenimiento" README.md
+        grep -q "## Servicios Disponibles" README.md
+
+    - name: Verificar licencia
+      run: |
+        echo "Verificando archivo de licencia..."
+        test -f LICENSE 
