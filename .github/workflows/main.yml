@@ -25,6 +25,18 @@ jobs:
         sudo ln -s /usr/local/bin/docker-compose /usr/bin/docker-compose
         docker-compose --version
 
+    - name: Generar archivo .env temporal
+      run: |
+        echo "Generando archivo .env temporal para pruebas..."
+        cat > .env << EOL
+        # Variables de entorno para pruebas
+        POSTGRES_USER=test_user
+        POSTGRES_PASSWORD=test_password
+        POSTGRES_DB=test_db
+        QDRANT_API_KEY=test_api_key
+        N8N_ENCRYPTION_KEY=test_encryption_key
+        EOL
+
     - name: Verificar estructura del proyecto
       run: |
         echo "Verificando estructura del proyecto..."
