@@ -39,6 +39,7 @@ services:
           cpus: '0.25'
           memory: 256M
 
+
 volumes:
   redis_data:
     driver: local
@@ -46,8 +47,6 @@ volumes:
       type: none
       o: bind
       device: ${PWD}/redis/data
-
-volumes:
   postgres_data:
     driver: local
     driver_opts:
