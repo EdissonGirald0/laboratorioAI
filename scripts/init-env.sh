@@ -11,10 +11,31 @@ echo -e "${YELLOW}Iniciando configuración del entorno...${NC}"
 N8N_ENCRYPTION_KEY=$(openssl rand -base64 32)
 WEBUI_SECRET_KEY=$(openssl rand -base64 32)
 QDRANT_API_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
+FLOWISE_API_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
 
 # Generar contraseñas
 POSTGRES_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
 POSTGRES_NON_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+FLOWISE_USERNAME="admin"
+FLOWISE_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+
+# Configurar Redis
+REDIS_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+REDIS_URL="redis://:${REDIS_PASSWORD}@redis:6379"
+
+# Generar JSON de credenciales para Flowise
+CREDENTIAL_JSON=$(cat << EOF
+{
+  "ollama": {
+    "baseURL": "http://ollama:11434"
+  },
+  "qdrant": {
+    "url": "http://qdrant:6333",
+    "apiKey": "${QDRANT_API_KEY}"
+  }
+}
+EOF
+)
 
 # Crear el archivo .env
 cat > .env << EOL

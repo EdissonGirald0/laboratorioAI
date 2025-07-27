@@ -1,0 +1,52 @@
+{
+  "name": "Laboratorio AI",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "floowise",
+  "workspaceFolder": "/workspaces/laboratorioAI",
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "ms-toolsai.jupyter",
+        "ms-toolsai.jupyter-keymap",
+        "ms-toolsai.jupyter-renderers",
+        "mtxr.sqltools",
+        "mtxr.sqltools-driver-pg"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": true
+        }
+      }
+    }
+  },
+
+  "forwardPorts": [
+    3000,  // Floowise
+    5678,  // n8n
+    6333,  // Qdrant
+    8080,  // OpenWebUI
+    11434  // Ollama
+  ],
+
+  "postCreateCommand": "bash scripts/setup-codespace.sh",
+
+  "remoteUser": "codespace",
+
+  "features": {
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/devcontainers/features/python:1": {},
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "20"
+    }
+  }
+}

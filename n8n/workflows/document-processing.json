@@ -1,0 +1,136 @@
+{
+  "name": "AI Document Processing",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "/process-document",
+        "options": {}
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "={{$node.Webhook.json.url}}",
+        "options": {}
+      },
+      "name": "HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        450,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://floowise:3000/api/process",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{$env.N8N_FLOOWISE_API_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "text": "={{$node.HTTP Request.json.text}}",
+          "model": "mistral"
+        },
+        "options": {}
+      },
+      "name": "Floowise Process",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        650,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "http://qdrant:6333/collections/documents/points",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "api-key",
+              "value": "={{$env.N8N_QDRANT_API_KEY}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "vector": "={{$node.Floowise Process.json.embedding}}",
+          "payload": {
+            "text": "={{$node.HTTP Request.json.text}}",
+            "metadata": "={{$node.HTTP Request.json.metadata}}",
+            "processed_text": "={{$node.Floowise Process.json.response}}"
+          }
+        },
+        "options": {}
+      },
+      "name": "Qdrant Store",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [
+        850,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Floowise Process",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Floowise Process": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "tags": [
+    "ai",
+    "document-processing"
+  ],
+  "triggerCount": 1
+}

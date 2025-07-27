@@ -1,23 +1,45 @@
-FROM node:18-alpine
+FROM node:20-alpine
 
-# Instalar dependencias necesarias
-RUN apk add --no-cache python3 py3-pip
+# Instalar dependencias del sistema
+RUN apk add --no-cache 
+    python3 
+    py3-pip 
+    build-base 
+    git 
+    openssh-client 
+    postgresql-client
 
 # Crear directorio de la aplicación
 WORKDIR /app
 
+# Instalar flowise globalmente
+RUN npm install -g flowise
+
+# Configurar directorios de datos
+RUN mkdir -p /root/.flowise
+VOLUME ["/root/.flowise"]
+
+# Variables de entorno por defecto
+ENV PORT=3000 
+    FLOWISE_USERNAME=user 
+    FLOWISE_PASSWORD=password 
+    DATABASE_TYPE=postgres 
+    APIKEY_PATH=/root/.flowise/.apikeys 
+    SECRETKEY_PATH=/root/.flowise/.secrets 
+    LOG_LEVEL=info 
+    LOG_PATH=/root/.flowise/logs
+
 # Copiar archivos de configuración
-COPY package*.json ./
-COPY . .
+COPY config.json /root/.flowise/
+COPY components/ /root/.flowise/components/
 
-# Instalar dependencias
-RUN npm install
-
-# Exponer el puerto de Floowise
+# Exponer el puerto
 EXPOSE 3000
 
-# Configurar el directorio de datos
-VOLUME ["/app/data"]
+# Script de healthcheck
+COPY healthcheck.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/healthcheck.sh
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 CMD [ "/usr/local/bin/healthcheck.sh" ]
 
-# Comando para iniciar Floowise
-CMD ["npm", "run", "dev"] 
+# Comando para iniciar Flowise
+CMD ["flowise", "start"] 

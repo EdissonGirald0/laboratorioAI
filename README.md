@@ -1,11 +1,118 @@
 # Laboratorio AI Local
 
-[![GitHub Actions](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml/badge.svg)](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml)
+[![GitHub Actions](https://github.com/Ediss## 🔄 Estado del Sistemairald0/laboratorioAI/actions/workflows/main.y### 🤝 Contribuir
+
+Para contribuir al proyecto:
+
+1. Haz fork del repositorio
+2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
+3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+### 📝 Licenciag)](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)
 
 ## 📋 Información del Repositorio
 
 Este repositorio contiene la configuración y scripts necesarios para desplegar un laboratorio de Inteligencia Artificial local utilizando Docker. El proyecto está diseñado para proporcionar un entorno completo y aislado para experimentar con diferentes modelos de IA y herramientas de procesamiento de datos.
+
+### 📁 Estructura del Proyecto
+
+```
+laboratorioAI/
+├── data/
+│   ├── postgres/
+│   ├── qdrant/
+│   ├── ollama/
+│   ├── n8n/
+│   ├── floowise/
+│   ├── openwebui/
+│   └── redis/
+├── scripts/
+│   ├── init-env.sh
+│   ├── backup-data.sh
+│   └── restore-data.sh
+└── .devcontainer/
+    └── post-create.sh
+```
+
+### 🚀 Inicio Rápido
+
+1. **Clonar el repositorio:**
+   ```bash
+   git clone https://github.com/EdissonGirald0/laboratorioAI.git
+   cd laboratorioAI
+   ```
+
+2. **Ejecutar el script de configuración:**
+   ```bash
+   chmod +x .devcontainer/post-create.sh
+   ./.devcontainer/post-create.sh
+   ```
+
+3. **Verificar la instalación:**
+   - El script verificará automáticamente:
+     - Instalación de Docker
+     - Instalación de Docker Compose
+     - Permisos de usuario
+     - Directorios necesarios
+
+### 🔧 Solución de Problemas
+
+1. **Problemas de Permisos Docker:**
+   ```bash
+   # Agregar usuario al grupo docker
+   newgrp docker
+   # Si persisten los problemas
+   sudo chmod 666 /var/run/docker.sock
+   ```
+
+2. **Verificar Estado de Docker:**
+   ```bash
+   sudo systemctl status docker
+   # Si está detenido
+   sudo systemctl restart docker
+   ```
+
+## � Estado del Sistema
+
+Este repositorio contiene la configuración y scripts necesarios para desplegar un laboratorio de Inteligencia Artificial local utilizando Docker. El proyecto está diseñado para proporcionar un entorno completo y aislado para experimentar con diferentes modelos de IA y herramientas de procesamiento de datos.
+
+### 🔄 Flujo de Instalación
+
+1. **Detección de Entorno**
+   - Verificación del sistema operativo
+   - Identificación de Codespace vs Local
+
+2. **Verificación del Sistema**
+   - Comprobación de dependencias
+   - Validación de requisitos
+
+3. **Configuración de Docker**
+   - Instalación de Docker si es necesario
+   - Instalación de Docker Compose
+   - Configuración de permisos
+
+4. **Configuración de Ambiente**
+   - Instalación de Node.js y herramientas
+   - Creación de directorios
+   - Configuración de permisos
+   - Verificación final
+
+### 🛠️ Entornos Soportados
+
+El script de configuración ahora soporta dos entornos principales:
+
+1. **GitHub Codespaces**
+   - Detección automática del entorno
+   - Verificación de herramientas preinstaladas
+   - Configuración mínima necesaria
+
+2. **Sistema Local (Linux)**
+   - Instalación completa de dependencias
+   - Configuración de Docker y Docker Compose
+   - Gestión de permisos y directorios
 
 ### 🚀 Características Principales
 
@@ -15,33 +122,27 @@ Este repositorio contiene la configuración y scripts necesarios para desplegar 
 - **Seguridad**: Configuración segura por defecto
 - **Escalabilidad**: Fácil de extender con nuevos servicios
 
-### 🛠️ Tecnologías Utilizadas
+### 🛠️ Tecnologías y Herramientas
 
-- Docker y Docker Compose
-- PostgreSQL para almacenamiento de datos
-- Qdrant para búsqueda vectorial
-- Ollama para modelos de lenguaje local
-- N8N para automatización
-- Floowise para procesamiento de datos
-- OpenWebUI para interfaz web
+- **Core Technologies**
+  - Docker
+  - Docker Compose
+  - Node.js
 
-### 📦 Estructura del Repositorio
+- **Servicios**
+  - PostgreSQL (Base de datos)
+  - Qdrant (Vector DB)
+  - Ollama (Modelos de IA)
+  - N8N (Automatización)
+  - Floowise (Procesamiento)
+  - OpenWebUI (Interfaz)
 
-```
-laboratorioAI/
-├── .github/                    # Configuración de GitHub Actions
-├── scripts/                    # Scripts de mantenimiento
-├── postgres/                   # Configuración de PostgreSQL
-├── qdrant/                     # Configuración de Qdrant
-├── ollama/                     # Configuración de Ollama
-├── n8n/                        # Configuración de N8N
-├── floowise/                   # Configuración de Floowise
-├── openwebui/                  # Configuración de OpenWebUI
-├── docker-compose.yml          # Configuración de Docker Compose
-├── .gitignore                  # Archivos ignorados por Git
-├── LICENSE                     # Licencia del proyecto
-└── README.md                   # Este archivo
-```
+- **Herramientas de Desarrollo**
+  - TypeScript
+  - ts-node
+  - n8n CLI
+
+### 📦 Estructura Completa del Repositorio
 
 ### 🤝 Contribuciones
 
@@ -70,40 +171,25 @@ Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) par
 - 50GB de espacio en disco
 - GPU compatible con CUDA (opcional, pero recomendado)
 
-## Estructura del Proyecto
+## Directorio de Datos
 
 ```
-.
-├── README.md                 # Documentación del proyecto
-├── docker-compose.yml        # Configuración de servicios Docker
-├── .gitignore               # Archivos ignorados por Git
-├── LICENSE                  # Licencia del proyecto
-├── scripts/                 # Scripts de mantenimiento y configuración
-│   ├── init-env.sh         # Generación de variables de entorno
-│   ├── init-data.sh        # Inicialización de bases de datos
-│   ├── backup-data.sh      # Backup de datos y configuración
-│   └── restore-data.sh     # Restauración desde backups
-├── backups/                # Directorio de respaldos
-├── postgres/              # Datos de PostgreSQL
-│   └── data/
-├── qdrant/               # Datos de Qdrant
-│   └── data/
-├── ollama/              # Datos de Ollama
-│   └── data/
-├── n8n/                 # Datos de n8n
-│   └── data/
-├── floowise/            # Datos de Floowise
-│   └── data/
-└── openwebui/           # Datos de OpenWebUI
-    └── data/
+data/
+├── postgres/            # Base de datos principal
+├── qdrant/             # Base de datos vectorial
+├── ollama/             # Modelos de IA
+├── n8n/                # Configuración de automatización
+├── floowise/           # Datos de la aplicación
+├── openwebui/          # Configuración de la interfaz
+└── redis/             # Caché y mensajería
 ```
 
 ## Configuración Inicial
 
 1. Clonar el repositorio:
 ```bash
-git clone <url-del-repositorio>
-cd laboratorio-ai
+git clone https://github.com/EdissonGirald0/laboratorioAI.git
+cd laboratorioAI
 ```
 
 2. Generar el archivo .env:
@@ -158,15 +244,15 @@ sudo ./scripts/restore-data.sh ./backups/backup_YYYYMMDD_HHMMSS
 ## Servicios Disponibles
 
 ### Ollama (Modelos de IA)
-- **URL**: http://localhost:11434
+- **URL**: `http://localhost:11434`
 - **Versión**: 0.6.7
 - **Configuración**: 
-  - Host: 0.0.0.0
-  - Puerto: 11434
-  - Volumen persistente: ./ollama/data
+  - Host: `0.0.0.0`
+  - Puerto: `11434`
+  - Volumen persistente: `./ollama/data`
 
 ### OpenWebUI (Interfaz Web para Ollama)
-- **URL**: http://localhost:8080
+- **URL**: `http://localhost:8080`
 - **Versión**: v0.6.13
 - **Configuración**:
   - Base de datos: SQLite
@@ -174,17 +260,18 @@ sudo ./scripts/restore-data.sh ./backups/backup_YYYYMMDD_HHMMSS
   - Volumen persistente: ./openwebui/data
 
 ### n8n (Automatización)
-- **URL**: http://localhost:5678
+- **URL**: `http://localhost:5678`
 - **Versión**: latest (1.97.1)
 - **Configuración**:
-  - Modo: development
+  - Modo: `development`
   - Gestión de usuarios: deshabilitada
   - Diagnósticos: deshabilitados
   - Métricas: deshabilitadas
   - Archivos de configuración: deshabilitados
+  - Volumen persistente: `./n8n/data`
 
 ### Floowise (Aplicación Principal)
-- **URL**: http://localhost:3000
+- **URL**: `http://localhost:3000`
 - **Configuración**:
   - Base de datos: PostgreSQL
   - Vector DB: Qdrant

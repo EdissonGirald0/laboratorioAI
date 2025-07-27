@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "lib": ["es2019"],
+    "module": "commonjs",
+    "outDir": "./dist",
+    "target": "es2019",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "node",
+    "declaration": true,
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "n8n-workflow": ["../../node_modules/n8n-workflow"]
+    }
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules/**/*", "**/*.spec.ts"]
+}

@@ -1,0 +1,62 @@
+{
+    "chatbots": [],
+    "tools": [
+        {
+            "name": "Ollama",
+            "description": "Integration with Ollama API",
+            "url": "http://ollama:11434",
+            "available_models": [
+                "devstral:24b",
+                "phi4-reasoning",
+                "nomic-embed-text",
+                "codellama",
+                "mistral"
+            ]
+        },
+        {
+            "name": "Qdrant",
+            "description": "Vector database for semantic search",
+            "url": "http://qdrant:6333"
+        }
+    ],
+    "credentials": {
+        "ollama": {
+            "baseURL": "http://ollama:11434"
+        },
+        "qdrant": {
+            "url": "http://qdrant:6333",
+            "apiKey": "${QDRANT_API_KEY}"
+        },
+        "postgres": {
+            "host": "postgres",
+            "port": 5432,
+            "user": "${POSTGRES_USER}",
+            "password": "${POSTGRES_PASSWORD}",
+            "database": "${POSTGRES_DB}"
+        }
+    },
+    "components": {
+        "nodes": {
+            "vectorStores": ["qdrant"],
+            "llms": ["ollama"],
+            "embeddings": ["nomic-embed-text"],
+            "textSplitters": ["recursive", "token"],
+            "documentLoaders": ["text", "pdf", "docx", "csv"],
+            "vectorStoreRetrieval": ["similarity", "mmr"],
+            "memory": ["buffer", "postgres"],
+            "cache": ["postgres"]
+        }
+    },
+    "logging": {
+        "level": "info",
+        "path": "/root/.flowise/logs"
+    },
+    "settings": {
+        "password": true,
+        "multiUser": false,
+        "canRegister": false,
+        "maxLoginAttempts": 5,
+        "lockTime": 30,
+        "maxActiveChats": 10
+    }
+}

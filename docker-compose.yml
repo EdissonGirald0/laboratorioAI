@@ -6,6 +6,47 @@ networks:
     name: laboratorio_ai
     driver: bridge
 
+services:
+  dev:
+    image: mcr.microsoft.com/vscode/devcontainers/universal:latest
+    volumes:
+      - ..:/workspace:cached
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: sleep infinity
+    network_mode: service:redis
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - laboratorio_ai
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
+volumes:
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/redis/data
+
 volumes:
   postgres_data:
     driver: local
@@ -46,7 +87,7 @@ volumes:
 
 services:
   postgres:
-    image: postgres:16
+    image: postgres:latest
     restart: always
     environment:
       - POSTGRES_USER
@@ -103,7 +144,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   openwebui:
-    image: ghcr.io/open-webui/open-webui:v0.6.13
+    image: ghcr.io/open-webui/open-webui:latest
     container_name: openwebui
     env_file:
       - .env
@@ -130,20 +171,91 @@ services:
     ports:
       - "5678:5678"
     environment:
-      - NODE_ENV=development
-      - N8N_PROTOCOL=http
-      - N8N_HOST=localhost
-      - N8N_PORT=5678
+      # Configuración básica
+      - N8N_HOST=${N8N_HOST:-localhost}
+      - N8N_PORT=${N8N_PORT:-5678}
+      - N8N_PROTOCOL=${N8N_PROTOCOL:-http}
+      - N8N_PATH=${N8N_PATH:-/}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-      - N8N_USER_MANAGEMENT_DISABLED=true
+      - NODE_ENV=production
+      
+      # Configuración de base de datos
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      
+      # Configuración de Redis
+      - QUEUE_BULL_REDIS_HOST=redis
+      - QUEUE_BULL_REDIS_PORT=6379
+      - QUEUE_BULL_REDIS_PASSWORD=${REDIS_PASSWORD}
+      
+      # Configuración de seguridad
+      - N8N_BASIC_AUTH_ACTIVE=true
+      - N8N_BASIC_AUTH_USER=${N8N_BASIC_AUTH_USER}
+      - N8N_BASIC_AUTH_PASSWORD=${N8N_BASIC_AUTH_PASSWORD}
+      - N8N_EMAIL_MODE=smtp
+      - N8N_SMTP_HOST=${SMTP_HOST}
+      - N8N_SMTP_PORT=${SMTP_PORT}
+      - N8N_SMTP_USER=${SMTP_USER}
+      - N8N_SMTP_PASS=${SMTP_PASSWORD}
+      
+      # Configuración de workflows
+      - EXECUTIONS_DATA_PRUNE=true
+      - EXECUTIONS_DATA_MAX_AGE=168
+      - EXECUTIONS_DATA_PRUNE_TIMEOUT=7200
+      - N8N_DEFAULT_WORKFLOW_NAME=AI Lab Workflow
+      - GENERIC_TIMEZONE=UTC
+      
+      # Configuración de logging
+      - N8N_LOG_LEVEL=info
+      - N8N_LOG_OUTPUT=file
+      - N8N_LOG_FILE_LOCATION=/home/node/.n8n/logs
+      
+      # Configuración avanzada
+      - N8N_HIRING_BANNER_ENABLED=false
+      - N8N_PERSONALIZATION_ENABLED=false
       - N8N_DIAGNOSTICS_ENABLED=false
       - N8N_DIAGNOSTICS_CONFIG_ENABLED=false
-      - N8N_METRICS=false
-      - N8N_DEPLOYMENT_TYPE=main
-      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
-      - N8N_DISABLE_WEBHOOK_DEREGISTRATION_SHUTDOWN=true
-      - N8N_CONFIG_FILES_ENABLED=false
+      - N8N_PUBLIC_API_DISABLED=false
+      - N8N_PUBLIC_API_SAME_USER_ALLOWED=true
+      - N8N_PUSH_BACKEND_DISABLED=true
+      - N8N_METRICS=true
+      
+      # Variables personalizadas para integración
+      - N8N_FLOOWISE_URL=http://floowise:3000
+      - N8N_FLOOWISE_API_KEY=${FLOWISE_API_KEY}
+      - N8N_OLLAMA_URL=http://ollama:11434
+      - N8N_QDRANT_URL=http://qdrant:6333
+      - N8N_QDRANT_API_KEY=${QDRANT_API_KEY}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/home/node/.n8n/workflows
+      - ./n8n/custom:/home/node/.n8n/custom
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      floowise:
+        condition: service_started
+    networks:
+      - laboratorio_ai
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:5678/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 2G
+        reservations:
+          cpus: '0.5'
+          memory: 1G
     networks:
       - laboratorio_ai
     extra_hosts:
@@ -154,15 +266,58 @@ services:
     container_name: floowise
     env_file:
       - .env
+    environment:
+      - PORT=3000
+      - HOST=0.0.0.0
+      - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+      - DATABASE_TYPE=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_HOST=postgres
+      - DATABASE_USER=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - DATABASE_NAME=${POSTGRES_DB}
+      - REDIS_URL=${REDIS_URL}
+      - OLLAMA_API_BASE_URL=http://ollama:11434
+      - QDRANT_URL=http://qdrant:6333
+      - EXECUTION_MODE=main
+      - DEBUG=true
+      - LOG_LEVEL=info
+      - TOOL_FUNCTION_BUILTIN_DEP=crypto,fs,path
+      - TOOL_FUNCTION_EXTERNAL_DEP=axios,moment
+      - CREDENTIAL_JSON=${CREDENTIAL_JSON}
+      - APIKEY_PATH=/root/.flowise/.apikeys
+      - SECRETKEY_PATH=/root/.flowise/.secrets
     ports:
       - "3000:3000"
     volumes:
-      - floowise_data:/app/data
+      - floowise_data:/root/.flowise
+      - ./floowise/components:/root/.flowise/components
     depends_on:
-      - postgres
-      - qdrant
+      postgres:
+        condition: service_healthy
+      qdrant:
+        condition: service_started
+      ollama:
+        condition: service_started
+      redis:
+        condition: service_started
     networks:
       - laboratorio_ai
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
     extra_hosts:
-      - "host.docker.internal:host-gateway" 
+      - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 4G
+        reservations:
+          cpus: '0.5'
+          memory: 1G 
