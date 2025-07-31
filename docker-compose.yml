@@ -31,12 +31,12 @@ volumes:
       type: none
       o: bind
       device: ${PWD}/n8n/data
-  floowise_data:
+  flowise_data:
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: ${PWD}/floowise/data
+      device: ${PWD}/flowise/data
   openwebui_data:
     driver: local
     driver_opts:
@@ -214,20 +214,29 @@ services:
       timeout: 10s
       retries: 3
 
-  floowise:
-    build: ./floowise
-    container_name: floowise
-    env_file:
-      - .env
+  flowise:
+    image: flowiseai/flowise:2.1.1
+    container_name: flowise
+    restart: unless-stopped
+    environment:
+      - PORT=3000
+      - DATABASE_TYPE=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_HOST=postgres
+      - DATABASE_NAME=flowise
+      - DATABASE_USER=${POSTGRES_USER}
+      - DATABASE_PASSWORD=${POSTGRES_PASSWORD}
+      - FLOWISE_USERNAME=${FLOWISE_USERNAME}
+      - FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+      - OVERRIDE_DATABASE=true
     ports:
       - "3000:3000"
     volumes:
-      - floowise_data:/app/data
+      - flowise_data:/root/.flowise
     depends_on:
-      - postgres
-      - qdrant
+      postgres:
+        condition: service_healthy
     networks:
       - laboratorio_ai
-    restart: unless-stopped
     extra_hosts:
       - "host.docker.internal:host-gateway" 

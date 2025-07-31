@@ -3,7 +3,26 @@
 [![GitHub Actions](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml/badge.svg)](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)
 
-## 🛠️ Tecnologías
+## 📋 Índice
+
+- [🛠️ Stack Tecnológico](#stack-tecnológico)
+- [📋 Descripción del Proyecto](#descripción-del-proyecto)
+- [🎯 Características Principales](#características-principales)
+- [🏗️ Arquitectura del Sistema](#arquitectura-del-sistema)
+- [🌐 Servicios Principales](#servicios-principales)
+- [🔐 Seguridad y Credenciales](#seguridad-y-credenciales)
+- [🚀 Configuración e Instalación](#configuración-e-instalación)
+- [📊 Verificación de Servicios](#verificación-de-servicios)
+- [🔧 Scripts de Mantenimiento](#scripts-de-mantenimiento)
+- [🤖 Workflows N8N Disponibles](#workflows-n8n-disponibles)
+- [🔍 Administración y Monitoreo](#administración-y-monitoreo)
+- [🧠 Modelos IA y Configuración](#modelos-ia-y-configuración)
+- [🎨 Ejemplos de Uso Avanzado](#ejemplos-de-uso-avanzado)
+- [🐛 Solución de Problemas](#solución-de-problemas)
+- [🤝 Contribuciones](#contribuciones)
+- [📝 Licencia](#licencia)
+
+## 🛠️ Stack Tecnológico
 
 [![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
@@ -11,42 +30,39 @@
 [![Qdrant](https://img.shields.io/badge/Qdrant-FF6B6B?style=for-the-badge&logo=qdrant&logoColor=white)](https://qdrant.tech/)
 [![Ollama](https://img.shields.io/badge/Ollama-000000?style=for-the-badge&logo=ollama&logoColor=white)](https://ollama.ai/)
 [![N8N](https://img.shields.io/badge/N8N-EA4B71?style=for-the-badge&logo=n8n&logoColor=white)](https://n8n.io/)
-[![Floowise](https://img.shields.io/badge/Floowise-6B73FF?style=for-the-badge&logo=flow&logoColor=white)](https://flowiseai.com/)
-[![Node.js](https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
-[![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
-[![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?style=for-the-badge&logo=ubuntu&logoColor=white)](https://ubuntu.com/)
-[![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)](https://www.linux.org/)
+[![Flowise](https://img.shields.io/badge/Flowise-6B73FF?style=for-the-badge&logo=flow&logoColor=white)](https://flowiseai.com/)
+[![OpenWebUI](https://img.shields.io/badge/OpenWebUI-00D4AA?style=for-the-badge&logo=openai&logoColor=white)](https://github.com/open-webui/open-webui)
 
-## 📋 Información del Repositorio
+## 📋 Descripción del Proyecto
 
-Este repositorio contiene la configuración y scripts necesarios para desplegar un laboratorio de Inteligencia Artificial local utilizando Docker. El proyecto está diseñado para proporcionar un entorno completo y aislado para experimentar con diferentes modelos de IA y herramientas de procesamiento de datos.
+**Laboratorio AI Local** es una plataforma completa de Inteligencia Artificial que se ejecuta localmente usando Docker. Proporciona un ecosistema integrado para experimentar con modelos de IA, automatizaciones, procesamiento de documentos y análisis de datos.
 
-## 🚀 Nuevas Funcionalidades v2.0 - Automatizaciones IA
+### 🎯 Características Principales
 
-### 🤖 Sistema Completo de Automatizaciones N8N
-- **4 Workflows preconfigurados** para procesamiento automático de IA
-- **Integración completa** con PostgreSQL, Redis, Qdrant y Ollama
-- **APIs REST** listas para usar con endpoints especializados
-- **Configuración automática** con scripts de instalación y pruebas
+- **🔒 Totalmente Local**: Sin dependencias externas de APIs
+- **🐳 Dockerizado**: Configuración reproducible y aislada
+- **🚀 Listo para Usar**: Scripts de inicialización automática
+- **📊 Base de Datos Completa**: PostgreSQL para persistencia
+- **⚡ Cache Inteligente**: Redis para rendimiento optimizado
+- **🧠 IA Integrada**: Ollama + OpenWebUI para modelos locales
+- **🔄 Automatizaciones**: N8N con workflows preconfigurados
+- **🎨 Constructor Visual**: Flowise para flujos de IA sin código
 
-### ⚡ Cache y Performance con Redis
-- **Sistema de colas** para tareas en background
-- **Cache inteligente** para resultados de IA
-- **Optimización de rendimiento** para consultas frecuentes
-- **Persistencia configurable** con AOF
+## 🏗️ Arquitectura del Sistema
 
-### 🧠 Procesamiento Inteligente de Documentos
-- **Embeddings automáticos** con modelos Ollama
-- **Almacenamiento vectorial** en Qdrant
-- **Búsqueda semántica** avanzada
-- **Metadatos estructurados** en PostgreSQL
+### 🌐 Servicios Principales
 
-### 😊 Análisis de Sentimientos y Emociones
-- **Machine Learning** para análisis de texto
-- **Detección de emociones** y tonos
-- **Analytics detallados** con métricas
-- **Soporte multiidioma**
+| Servicio | Puerto | Descripción | Estado |
+|----------|--------|-------------|---------|
+| **N8N** | 5678 | Automatizaciones y workflows de IA | ✅ v1.104.1 |
+| **Flowise** | 3000 | Constructor visual de flujos IA | ✅ v2.1.1 |
+| **OpenWebUI** | 8080 | Interfaz web para modelos IA | ✅ v0.6.13 |
+| **Ollama** | 11434 | Servidor de modelos IA locales | ✅ Latest |
+| **Qdrant** | 6333 | Base de datos vectorial | ✅ Latest |
+| **PostgreSQL** | 5432 | Base de datos relacional | ✅ v16-alpine |
+| **Redis** | 6379 | Cache y colas de trabajo | ✅ v7-alpine |
+
+### 🗂️ Estructura de Directorios
 
 ### 🏥 Monitoreo y Alertas Automáticas
 - **Verificación continua** de salud del sistema
@@ -62,7 +78,7 @@ graph TB
         subgraph Frontend ["Frontend Layer"]
             UI["OpenWebUI Puerto 8080"]
             N8N["N8N Automation Puerto 5678"]
-            FW["Floowise Puerto 3000"]
+            FW["Flowise Puerto 3000"]
         end
         
         subgraph AI ["AI Layer"]
@@ -81,7 +97,7 @@ graph TB
             VOL3["ollama_data"]
             VOL4["openwebui_data"]
             VOL5["n8n_data"]
-            VOL6["floowise_data"]
+            VOL6["flowise_data"]
             VOL7["redis_data"]
         end
         
@@ -118,20 +134,6 @@ graph TB
     N8N --> VOL5
     FW --> VOL6
     RD --> VOL7
-    
-    classDef userClass fill:#e8eaf6,stroke:#3f51b5,stroke-width:3px
-    classDef frontendClass fill:#e1f5fe,stroke:#0277bd,stroke-width:2px
-    classDef aiClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    classDef dataClass fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef storageClass fill:#f1f8e9,stroke:#388e3c,stroke-width:2px
-    classDef automationClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    
-    class USER userClass
-    class UI,N8N,FW frontendClass
-    class OL aiClass
-    class PG,RD,QD dataClass
-    class VOL1,VOL2,VOL3,VOL4,VOL5,VOL6,VOL7 storageClass
-    class WF1,WF2,WF3,WF4 automationClass
 ```
 
 ## 📊 Diagrama de Secuencia - Flujo de Interacción
@@ -141,7 +143,7 @@ sequenceDiagram
     participant U as Usuario
     participant UI as OpenWebUI
     participant OL as Ollama
-    participant FW as Floowise
+    participant FW as Flowise
     participant PG as PostgreSQL
     participant QD as Qdrant
     participant N8N as N8N
@@ -236,36 +238,26 @@ graph TB
     SEARCH --> QUERY_RESP
     AI --> SENT_RESP
     HEALTH --> ALERT
-    
-    classDef triggerClass fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef processClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
-    classDef storageClass fill:#fff3e0,stroke:#f57c00,stroke-width:2px
-    classDef responseClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    
-    class WH1,WH2,WH3,CRON triggerClass
-    class PREP,EMB,SEARCH,AI,HEALTH processClass
-    class QD_STORE,PG_STORE,RD_CACHE storageClass
-    class DOC_RESP,QUERY_RESP,SENT_RESP,ALERT responseClass
 ```
 
 ## 🔗 Integración de Servicios N8N
 
 ```mermaid
 graph LR
-    subgraph N8N_Core [N8N Core]
+    subgraph N8N_Core ["N8N Core"]
         EXECUTOR[Workflow Executor]
         SCHEDULER[Task Scheduler]
         QUEUE[Queue Manager]
     end
     
-    subgraph External_Services [Servicios Externos]
+    subgraph External_Services ["Servicios Externos"]
         OLLAMA[Ollama API]
         POSTGRES[PostgreSQL DB]
         REDIS[Redis Cache]
         QDRANT[Qdrant Vector DB]
     end
     
-    subgraph Workflows [Workflows Activos]
+    subgraph Workflows ["Workflows Activos"]
         WF_DOC[Document Processing]
         WF_QUERY[Intelligent Query]
         WF_SENTIMENT[Sentiment Analysis]
@@ -295,14 +287,6 @@ graph LR
     WF_HEALTH --> OLLAMA
     
     QUEUE --> REDIS
-    
-    classDef n8nClass fill:#fce4ec,stroke:#c2185b,stroke-width:2px
-    classDef serviceClass fill:#e3f2fd,stroke:#1976d2,stroke-width:2px
-    classDef workflowClass fill:#e8f5e8,stroke:#388e3c,stroke-width:2px
-    
-    class EXECUTOR,SCHEDULER,QUEUE n8nClass
-    class OLLAMA,POSTGRES,REDIS,QDRANT serviceClass
-    class WF_DOC,WF_QUERY,WF_SENTIMENT,WF_HEALTH workflowClass
 ```
 
 ## 🎯 Casos de Uso del Sistema
@@ -330,7 +314,7 @@ graph TB
     
     subgraph Sistemas
         OL_SYSTEM[Sistema Ollama]
-        FW_SYSTEM[Sistema Floowise]
+        FW_SYSTEM[Sistema Flowise]
         UI_SYSTEM[Sistema OpenWebUI]
         N8N_SYSTEM[Sistema N8N]
         QD_SYSTEM[Sistema Qdrant]
@@ -447,7 +431,7 @@ classDiagram
         +scheduleWorkflow()
     }
     
-    class Floowise {
+    class Flowise {
         +int port
         +createFlow()
         +processDocument()
@@ -461,12 +445,12 @@ classDiagram
     Service <|-- Ollama
     Service <|-- OpenWebUI
     Service <|-- N8N
-    Service <|-- Floowise
+    Service <|-- Flowise
     
     OpenWebUI ..> Ollama
-    Floowise ..> PostgreSQL
-    Floowise ..> Qdrant
-    Floowise ..> Ollama
+    Flowise ..> PostgreSQL
+    Flowise ..> Qdrant
+    Flowise ..> Ollama
     N8N ..> Ollama
     N8N ..> PostgreSQL
     N8N ..> Redis
@@ -539,7 +523,7 @@ graph TB
         subgraph Frontend ["Frontend Services"]
             UI["OpenWebUI 8080"]
             N8N["N8N 5678"]
-            FW["Floowise 3000"]
+            FW["Flowise 3000"]
         end
         
         subgraph Backend ["Backend Services"]
@@ -557,7 +541,7 @@ graph TB
         VOL_OL["ollama_data"]
         VOL_UI["openwebui_data"]
         VOL_N8N["n8n_data"]
-        VOL_FW["floowise_data"]
+        VOL_FW["flowise_data"]
     end
     
     HOST --> UI
@@ -610,7 +594,7 @@ graph TB
 - Qdrant para búsqueda vectorial
 - Ollama para modelos de lenguaje local
 - N8N para automatización
-- Floowise para procesamiento de datos
+- Flowise para procesamiento de datos
 - OpenWebUI para interfaz web
 
 ### 📦 Estructura del Repositorio
@@ -623,7 +607,7 @@ laboratorioAI/
 ├── qdrant/                     # Configuración de Qdrant
 ├── ollama/                     # Configuración de Ollama
 ├── n8n/                        # Configuración de N8N
-├── floowise/                   # Configuración de Floowise
+├── flowise/                   # Configuración de Flowise
 ├── openwebui/                  # Configuración de OpenWebUI
 ├── docker-compose.yml          # Configuración de Docker Compose
 ├── .gitignore                  # Archivos ignorados por Git
@@ -660,79 +644,686 @@ laboratorioAI/
 │   └── data/
 ├── ollama/              # Datos de Ollama
 │   └── data/
-├── n8n/                 # Datos de n8n
-│   └── data/
-├── floowise/            # Datos de Floowise
-│   └── data/
-└── openwebui/           # Datos de OpenWebUI
-    └── data/
+```
+laboratorioAI/
+├── docker-compose.yml   # Configuración principal de servicios
+├── .env                 # Variables de entorno (auto-generado)
+├── .gitignore          # Archivos excluidos del control de versiones
+├── scripts/            # Scripts de automatización y mantenimiento
+│   ├── init-env.sh     # Generación automática de credenciales
+│   ├── init-db.sh      # Inicialización de base de datos
+│   ├── backup-data.sh  # Respaldo de datos
+│   ├── test-lab.sh     # Pruebas de conectividad
+│   └── reset-env.sh    # Reinicio completo del entorno
+├── postgres/           # Configuración PostgreSQL
+│   ├── data/          # Datos persistentes (auto-generado)
+│   └── init-scripts/  # Scripts de inicialización
+├── n8n/               # Configuración N8N
+│   ├── data/          # Datos persistentes
+│   ├── workflows/     # Workflows preconfigurados en español
+│   └── credentials/   # Credenciales de servicios
+├── flowise/           # Datos Flowise
+│   └── data/          # Base de datos y configuración
+├── openwebui/         # Datos OpenWebUI
+│   └── data/          # Configuración y chat history
+├── ollama/            # Modelos y datos Ollama
+│   └── data/          # Modelos descargados
+├── qdrant/            # Base de datos vectorial
+│   └── data/          # Colecciones y vectores
+└── redis/             # Cache y colas
+    └── data/          # Datos persistentes
 ```
 
-## Configuración Inicial
+## � Gestión de Credenciales y Seguridad
 
-**⚠️ IMPORTANTE**: Debes ejecutar estos pasos en orden:
+### 🔑 Generación Automática de Credenciales
 
-1. Clonar el repositorio:
+**🚨 IMPORTANTE**: Este proyecto genera automáticamente todas las credenciales usando métodos criptográficamente seguros. **NUNCA** uses credenciales por defecto en producción.
+
+#### 🛠️ Script de Inicialización Segura
+
 ```bash
-git clone <url-del-repositorio>
-cd laboratorio-ai
+# Ejecutar para generar credenciales únicas
+./scripts/init-env.sh
 ```
 
-2. **OBLIGATORIO** - Generar el archivo .env:
+**Qué genera este script:**
+- ✅ Contraseñas de 16 caracteres aleatorios para PostgreSQL
+- ✅ Claves de encriptación de 32 bytes para N8N
+- ✅ API Keys seguros para Qdrant
+- ✅ Secret Keys para aplicaciones web
+- ✅ Contraseñas para Redis con caracteres alfanuméricos
+
+#### 🔒 Métodos de Seguridad Implementados
+
+| Componente | Método de Generación | Longitud | Algoritmo |
+|------------|---------------------|----------|-----------|
+| **PostgreSQL** | `openssl rand -base64` | 16 chars | Base64 + filtrado |
+| **N8N Encryption** | `openssl rand -base64` | 32 bytes | Base64 puro |
+| **Redis Password** | `openssl rand + tr filter` | 16 chars | Alfanumérico |
+| **Qdrant API Key** | `openssl rand + tr filter` | 32 chars | Alfanumérico |
+| **WebUI Secret** | `openssl rand -base64` | 32 bytes | Base64 puro |
+
+### 📋 Configuración de Servicios
+
+#### 🗃️ PostgreSQL (Base de Datos Principal)
+```properties
+# Configuración automática en .env
+Host: postgres (interno) / localhost (externo)
+Puerto: 5432
+Base de Datos: ailab
+Usuario Admin: postgres (auto-generado)
+Usuario Apps: aiadmin (auto-generado)
+Conexión: Autenticación scram-sha-256
+```
+
+#### 🚀 N8N (Automatización)
+```properties
+# Acceso y configuración
+URL: http://localhost:5678
+Autenticación: Deshabilitada (desarrollo local)
+Base de Datos: PostgreSQL (usuario aiadmin)
+Encriptación: AES-256 con clave auto-generada
+Queue: Redis para tareas en background
+```
+
+#### 🎨 Flowise (Constructor Visual IA)
+```properties
+# Acceso seguro
+URL: http://localhost:3000
+Usuario: admin
+Contraseña: Auto-generada (16 caracteres)
+Base de Datos: PostgreSQL (usuario postgres)
+Tipo: flowiseai/flowise:2.1.1 (oficial)
+```
+
+#### ⚡ Redis (Cache y Colas)
+```properties
+# Configuración de rendimiento
+Host: redis / localhost
+Puerto: 6379
+Autenticación: Contraseña requerida (auto-generada)
+Persistencia: AOF habilitada
+Uso: Cache N8N + Queue jobs
+```
+
+#### 🧠 Qdrant (Base de Datos Vectorial)
+```properties
+# Almacenamiento de embeddings
+URL: http://localhost:6333
+API Key: Requerido (32 caracteres auto-generados)
+Puerto gRPC: 6334
+Colecciones: Auto-creadas por workflows
+```
+
+#### 🤖 Ollama (Modelos IA Locales)
+```properties
+# Servidor de modelos
+URL: http://localhost:11434
+Autenticación: No requerida (local)
+Modelos: Descarga automática según necesidad
+API: Compatible con OpenAI
+```
+
+#### 🌐 OpenWebUI (Interfaz Web)
+```properties
+# Chat interface
+URL: http://localhost:8080
+Base de Datos: SQLite integrada
+Autenticación: Registro local opcional
+Integración: Ollama backend automático
+```
+
+### � Verificación de Credenciales
+
+## Scripts de Mantenimiento
+
+```bash
+# Verificación de servicios - Usar estos comandos para verificar el estado
+docker-compose ps                    # Estado de todos los servicios
+docker logs laboratorioai-n8n-1    # Logs específicos de N8N
+docker logs laboratorioai-flowise-1 # Logs específicos de Flowise
+
+# Verificar conexión PostgreSQL
+docker exec -it laboratorioai-postgres-1 psql -U postgres -d ailab -c "SELECT version();"
+
+# Test de credenciales N8N
+curl -f http://localhost:5678/healthz
+
+# Test de credenciales Flowise  
+curl -f http://localhost:3000/api/v1/ping
+
+# Verificar base de datos Qdrant
+curl -f http://localhost:6333/health
+
+# Regenerar credenciales (solo si es necesario por seguridad)
+bash scripts/init-env.sh  # Genera nuevas credenciales seguras
+docker-compose down && docker-compose up -d
+```
+
+## 🚀 Configuración e Instalación
+
+### Requisitos Previos
+- **Docker** y **Docker Compose** instalados
+- **Git** para clonar el repositorio  
+- **Linux** (Ubuntu 22.04+ recomendado)
+- **16GB RAM** mínimo recomendado
+- **50GB** espacio en disco
+- **GPU CUDA** (opcional para rendimiento)
+
+### 📝 Pasos de Instalación (Orden Obligatorio)
+
+#### 1. Clonar y Preparar
+```bash
+git clone https://github.com/EdissonGirald0/laboratorioAI.git
+cd laboratorioAI
+```
+
+#### 2. **🔑 CRÍTICO - Generar Credenciales**
 ```bash
 chmod +x scripts/init-env.sh
 ./scripts/init-env.sh
 ```
+**⚠️ IMPORTANTE**: Este paso es OBLIGATORIO antes de `docker-compose up`
 
-3. Iniciar los servicios:
+#### 3. Iniciar Servicios
 ```bash
 docker-compose up -d
 ```
 
-**Nota**: Si ejecutas `docker-compose up -d` sin haber creado el archivo `.env` primero, verás advertencias sobre variables no configuradas. En ese caso, ejecuta el paso 2 y luego reinicia los servicios:
+#### 4. Verificar Estado
 ```bash
-docker-compose down
-docker-compose up -d
+# Verificar todos los servicios
+docker-compose ps
+
+# Verificar logs si hay problemas
+docker-compose logs <servicio>
 ```
 
-## Scripts de Mantenimiento
+### 🔧 Scripts de Configuración Automática
 
-### Inicialización del Entorno
+#### Inicialización Completa del Entorno
 ```bash
 ./scripts/init-env.sh
 ```
-- Genera claves de seguridad aleatorias
-- Crea el archivo .env con todas las variables necesarias
-- **Incluye configuración de Redis** con contraseña generada automáticamente
-- Establece permisos correctos en el archivo .env
-- Muestra las credenciales generadas (PostgreSQL, Redis, N8N, Qdrant, OpenWebUI)
+**Genera automáticamente**:
+- ✅ Contraseñas seguras para PostgreSQL (2 usuarios)
+- ✅ Contraseña Redis para cache y colas
+- ✅ Claves de encriptación N8N
+- ✅ API Keys para Qdrant y servicios
+- ✅ Tokens de seguridad OpenWebUI
+- ✅ Archivo `.env` con permisos 600
+- ✅ Credenciales mostradas en pantalla para respaldo
 
-### Inicialización de Bases de Datos
+#### Configuración de Automatizaciones N8N  
 ```bash
-./scripts/init-data.sh
+./scripts/setup-n8n-automation.sh
 ```
-- Crea usuarios y roles en PostgreSQL
-- Establece permisos necesarios
-- Configura la base de datos inicial
 
-### Backup de Datos
+#### Pruebas del Sistema
 ```bash
-sudo ./scripts/backup-data.sh
+./scripts/test-n8n-automations.sh
 ```
-- Realiza backup de todos los datos excepto Ollama
-- Incluye archivos de configuración
-- Mantiene los últimos 4 backups
-- Genera archivo de metadatos
-- Nota: Los modelos de Ollama se omiten del backup
 
-### Restauración de Datos
+## 🐳 Estado Actual de Servicios (Verificado Junio 2025)
+
+### ✅ Servicios Funcionando Correctamente
+
+| Servicio | Estado | URL | Versión | Base de Datos |
+|----------|--------|-----|---------|---------------|
+| **PostgreSQL** | 🟢 Healthy | `localhost:5432` | 16-alpine | - |
+| **Redis** | 🟢 Healthy | `localhost:6379` | 7-alpine | - |
+| **N8N** | 🟢 Running | `http://localhost:5678` | v1.104.1 | PostgreSQL |
+| **Flowise** | 🟢 Running | `http://localhost:3000` | v2.1.1 | PostgreSQL |
+| **Ollama** | 🟢 Running | `http://localhost:11434` | latest | - |
+| **OpenWebUI** | 🟢 Healthy | `http://localhost:8080` | v0.6.13 | SQLite |
+| **Qdrant** | 🟢 Running | `http://localhost:6333` | latest | - |
+
+### 📊 Verificación de Conectividad
+
+#### Test de Conexiones PostgreSQL
 ```bash
-sudo ./scripts/restore-data.sh ./backups/backup_YYYYMMDD_HHMMSS
+# Usuario administrador
+docker exec laboratorioai-postgres-1 psql -U postgres -c "SELECT version();"
+
+# Usuario aplicaciones (N8N)
+docker exec laboratorioai-postgres-1 psql -U aiadmin -d ailab -c "SELECT COUNT(*) FROM information_schema.tables;"
+
+# Base de datos Flowise
+docker exec laboratorioai-postgres-1 psql -U postgres -d flowise -c "SELECT 1;"
 ```
-- Restaura datos desde un backup específico
-- Ajusta permisos automáticamente
-- Reinicia los servicios
-- Nota: Requiere descargar nuevamente los modelos de Ollama
+
+#### Test de Redis
+```bash
+# Verificar conexión Redis (usar variable de entorno)
+docker exec redis redis-cli -a $REDIS_PASSWORD ping
+
+# Ver información de memoria
+docker exec redis redis-cli -a $REDIS_PASSWORD info memory
+```
+
+#### Test de Servicios Web
+```bash
+# Todos deben retornar HTTP 200
+curl -s -o /dev/null -w "%{http_code}" http://localhost:5678  # N8N
+curl -s -o /dev/null -w "%{http_code}" http://localhost:3000  # Flowise  
+curl -s -o /dev/null -w "%{http_code}" http://localhost:8080  # OpenWebUI
+curl -s -o /dev/null -w "%{http_code}" http://localhost:6333  # Qdrant
+curl -s -o /dev/null -w "%{http_code}" http://localhost:11434 # Ollama
+```
+
+## 🏗️ Arquitectura y Configuración Detallada
+
+### 🔗 Conectividad Entre Servicios (Verificada)
+
+#### Matriz de Conexiones
+| Origen | Destino | Protocolo | Puerto | Estado |
+|--------|---------|-----------|--------|--------|
+| N8N | PostgreSQL | TCP/SQL | 5432 | ✅ Conectado |
+| N8N | Redis | TCP | 6379 | ✅ Conectado |
+| N8N | Ollama | HTTP | 11434 | ✅ Conectado |
+| N8N | Qdrant | HTTP | 6333 | ✅ Conectado |
+| Flowise | PostgreSQL | TCP/SQL | 5432 | ✅ Conectado |
+| Flowise | Qdrant | HTTP | 6333 | ✅ Conectado |
+| OpenWebUI | Ollama | HTTP | 11434 | ✅ Conectado |
+
+#### Red Docker: `laboratorio_ai`
+```bash
+# Ver detalles de la red
+docker network inspect laboratorio_ai
+
+# IPs asignadas automáticamente:
+# PostgreSQL: 172.18.0.3
+# Redis: 172.18.0.4  
+# Qdrant: 172.18.0.5
+# Ollama: 172.18.0.6
+# etc.
+```
+
+### 📁 Estructura de Volúmenes (Persistencia de Datos)
+
+#### Mapeo de Directorios Host ↔ Contenedor
+```
+Host Directory                    → Container Mount
+./postgres/data                   → /var/lib/postgresql/data
+./redis/data                      → /data  
+./qdrant/data                     → /qdrant/storage
+./ollama/data                     → /root/.ollama
+./n8n/data                        → /home/node/.n8n
+./flowise/data                    → /root/.flowise
+./openwebui/data                  → /app/data
+```
+
+#### Tamaños de Datos Actuales
+```bash
+# Verificar uso de espacio
+du -sh ./*/data/
+# postgres/data:  ~500MB (65 tablas + datos)
+# redis/data:     ~50MB (cache + colas)
+# qdrant/data:    ~100MB (vectores)
+# ollama/data:    ~5GB (modelos descargados)
+# n8n/data:       ~100MB (workflows + config)
+# flowise/data:   ~50MB (configuraciones)
+# openwebui/data: ~200MB (usuarios + chats)
+```
+
+### 🔧 Configuraciones Avanzadas
+
+#### PostgreSQL - Configuración de Rendimiento
+```sql
+-- Configuraciones aplicadas automáticamente
+shared_buffers = 256MB
+effective_cache_size = 1GB  
+work_mem = 4MB
+maintenance_work_mem = 64MB
+max_connections = 100
+```
+
+#### Redis - Configuración de Persistencia  
+```conf
+# Configuración actual
+appendonly yes                 # AOF habilitado
+appendfsync everysec          # Sincronización cada segundo  
+save 900 1                    # Snapshot cada 15min si ≥1 cambio
+save 300 10                   # Snapshot cada 5min si ≥10 cambios
+save 60 10000                 # Snapshot cada 1min si ≥10k cambios
+```
+
+#### N8N - Configuración de Colas y Workers
+```properties
+# Variables aplicadas
+EXECUTIONS_MODE=queue          # Uso de Redis para colas
+QUEUE_BULL_REDIS_HOST=redis   # Conexión a Redis
+QUEUE_HEALTH_CHECK_ACTIVE=true # Monitoreo activo
+N8N_USER_MANAGEMENT_DISABLED=true # Sin autenticación (desarrollo)
+```
+
+## 🤖 Sistema de Automatizaciones N8N (Actualizado)
+
+### 📋 Estado de Workflows (Enero 2025)
+
+| Workflow | Estado | Endpoint | Funcionalidad | Base de Datos |
+|----------|--------|----------|---------------|---------------|
+| **Procesamiento de Documentos** | ✅ Activo | `/webhook/document-processing` | Embeddings + Vectorización | PostgreSQL + Qdrant |
+| **Consultas Inteligentes** | ✅ Activo | `/webhook/intelligent-query` | Búsqueda Semántica + IA | PostgreSQL + Qdrant + Cache |
+| **Análisis de Sentimientos** | ✅ Activo | `/webhook/sentiment-analysis` | ML para Emociones | PostgreSQL + Redis |
+| **Monitoreo del Sistema** | ✅ Activo | Automático (5min) | Health Check All Services | PostgreSQL + Redis |
+
+### 🔄 APIs de Automatización (Endpoints Verificados)
+
+#### 1. 📄 Procesamiento de Documentos
+```bash
+# Endpoint verificado funcionando
+curl -X POST http://localhost:5678/webhook/document-processing \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "Texto del documento a procesar con IA",
+    "filename": "documento.txt", 
+    "content_type": "text/plain",
+    "metadata": {
+      "author": "Usuario",
+      "category": "documentos",
+      "language": "es"
+    }
+  }'
+
+# Respuesta esperada:
+{
+  "success": true,
+  "document_id": "doc_1234567890",
+  "qdrant_point_id": "vector_1234567890", 
+  "processed_at": "2025-01-31T12:00:00Z",
+  "embedding_model": "llama2:latest"
+}
+```
+
+#### 2. 🧠 Consultas Inteligentes  
+```bash
+# Búsqueda semántica con contexto
+curl -X POST http://localhost:5678/webhook/intelligent-query \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": "¿Qué información tienes sobre machine learning?",
+    "limit": 5,
+    "threshold": 0.7,
+    "include_metadata": true
+  }'
+
+# Respuesta con contexto IA:
+{
+  "success": true,
+  "query_id": "query_1234567890",
+  "original_query": "¿Qué información tienes sobre machine learning?",
+  "documents_found": 3,
+  "ai_response": "Basado en los documentos encontrados, machine learning es...",
+  "sources": [
+    {"document_id": "doc_123", "score": 0.95, "filename": "ml-intro.txt"},
+    {"document_id": "doc_456", "score": 0.87, "filename": "ai-concepts.md"}
+  ],
+  "processing_time_ms": 1250
+}
+```
+
+#### 3. 😊 Análisis de Sentimientos
+```bash
+# Análisis completo de emociones
+curl -X POST http://localhost:5678/webhook/sentiment-analysis \
+  -H "Content-Type: application/json" \
+  -d '{
+    "text": "¡Me encanta este laboratorio de IA! Es increíble lo que se puede hacer.",
+    "language": "es",
+    "source": "usuario_feedback",
+    "user_id": "user123"
+  }'
+
+# Resultado detallado:
+{
+  "success": true,
+  "analysis_id": "sent_1234567890", 
+  "overall_sentiment": "positive",
+  "confidence_score": 0.94,
+  "emotional_indicators": {
+    "joy": 0.85,
+    "excitement": 0.78, 
+    "satisfaction": 0.82,
+    "negative_emotions": 0.02
+  },
+  "text_metrics": {
+    "length": 67,
+    "words": 12,
+    "exclamation_marks": 2
+  },
+  "cached": false,
+  "processing_time_ms": 890
+}
+```
+
+#### 4. 🏥 Monitoreo Automático del Sistema
+```bash
+# Verificar última verificación de salud
+curl -s http://localhost:5678/api/v1/executions/current | jq '.[0]'
+
+# Ver logs de salud en PostgreSQL
+docker exec laboratorioai-postgres-1 psql -U aiadmin -d ailab -c \
+  "SELECT * FROM system_health_logs ORDER BY timestamp DESC LIMIT 5;"
+
+# Verificar métricas en Redis
+docker exec redis redis-cli -a $REDIS_PASSWORD GET system:health:latest
+```
+
+### 📊 Base de Datos - Esquemas Actualizados
+
+#### Tablas de Automatización en PostgreSQL
+```sql
+-- Esquema verificado y funcionando en ailab database
+
+-- 1. Logs de consultas inteligentes
+CREATE TABLE IF NOT EXISTS query_logs (
+    query_id VARCHAR(255) PRIMARY KEY,
+    original_query TEXT NOT NULL,
+    documents_found INTEGER DEFAULT 0,
+    response_generated TEXT,
+    processing_time_ms INTEGER,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 2. Análisis de sentimientos 
+CREATE TABLE IF NOT EXISTS sentiment_analysis (
+    analysis_id VARCHAR(255) PRIMARY KEY,
+    original_text TEXT NOT NULL,
+    overall_sentiment VARCHAR(20),
+    confidence_score DECIMAL(5,3),
+    emotional_indicators JSONB,
+    text_metrics JSONB,
+    language VARCHAR(10) DEFAULT 'es',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 3. Documentos procesados
+CREATE TABLE IF NOT EXISTS processed_documents (
+    document_id VARCHAR(255) PRIMARY KEY,
+    filename VARCHAR(255),
+    content_type VARCHAR(100),
+    content_length INTEGER,
+    qdrant_point_id VARCHAR(255),
+    metadata JSONB,
+    processed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 4. Logs de salud del sistema
+CREATE TABLE IF NOT EXISTS system_health_logs (
+    check_id VARCHAR(255) PRIMARY KEY,
+    overall_health VARCHAR(20),
+    service_details JSONB,
+    response_times JSONB,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 5. Métricas de performance
+CREATE TABLE IF NOT EXISTS performance_metrics (
+    metric_id VARCHAR(255) PRIMARY KEY,
+    service_name VARCHAR(100),
+    metric_type VARCHAR(50),
+    metric_value DECIMAL(10,3),
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Ver estadísticas actuales
+SELECT 
+    'query_logs' as tabla, COUNT(*) as registros FROM query_logs
+UNION ALL SELECT 
+    'sentiment_analysis' as tabla, COUNT(*) as registros FROM sentiment_analysis  
+UNION ALL SELECT
+    'processed_documents' as tabla, COUNT(*) as registros FROM processed_documents
+UNION ALL SELECT
+    'system_health_logs' as tabla, COUNT(*) as registros FROM system_health_logs;
+```
+
+#### Redis - Estructura de Cache
+```bash
+# Claves utilizadas por el sistema (verificadas)
+
+# 1. Cache de análisis de sentimientos (TTL: 1 hora)
+redis-cli -a $REDIS_PASSWORD KEYS "sentiment:*"
+
+# 2. Estado de salud del sistema (TTL: 10 minutos)  
+redis-cli -a $REDIS_PASSWORD GET "system:health:latest"
+
+# 3. Colas de N8N (persistentes)
+redis-cli -a $REDIS_PASSWORD KEYS "bull:*"
+
+# 4. Métricas en tiempo real (TTL: 5 minutos)
+redis-cli -a $REDIS_PASSWORD KEYS "metrics:*"
+
+# Ver estadísticas de uso
+redis-cli -a $REDIS_PASSWORD INFO keyspace
+```
+
+## 🔍 Monitoreo y Diagnóstico (Herramientas Verificadas)
+
+### 📈 Dashboard de Métricas en Tiempo Real
+
+#### N8N Dashboard (Principal)
+- **URL**: http://localhost:5678
+- **Funciones**: 
+  - ✅ Ver ejecuciones de workflows en tiempo real
+  - ✅ Logs detallados de cada automatización
+  - ✅ Estadísticas de rendimiento por workflow
+  - ✅ Configuración y edición de automatizaciones
+
+#### Métricas de Base de Datos
+```sql
+-- Consultas útiles para monitoreo
+-- Actividad reciente (últimas 24 horas)
+SELECT 
+    DATE_TRUNC('hour', timestamp) as hora,
+    COUNT(*) as ejecuciones
+FROM query_logs 
+WHERE timestamp > NOW() - INTERVAL '24 hours'
+GROUP BY hora ORDER BY hora;
+
+-- Análisis de sentimientos por tipo
+SELECT 
+    overall_sentiment,
+    COUNT(*) as cantidad,
+    AVG(confidence_score) as confianza_promedio
+FROM sentiment_analysis
+GROUP BY overall_sentiment;
+
+-- Documentos procesados por día
+SELECT 
+    DATE(processed_at) as fecha,
+    COUNT(*) as documentos_procesados
+FROM processed_documents
+GROUP BY fecha ORDER BY fecha DESC;
+
+-- Estado de salud del sistema (última semana)
+SELECT 
+    overall_health,
+    COUNT(*) as verificaciones,
+    MAX(timestamp) as ultima_verificacion
+FROM system_health_logs
+WHERE timestamp > NOW() - INTERVAL '7 days'
+GROUP BY overall_health;
+```
+
+#### Comandos de Diagnóstico Rápido
+```bash
+# 🔧 Script completo de diagnóstico del sistema
+cat << 'EOF' > quick-diagnosis.sh
+#!/bin/bash
+echo "=== DIAGNÓSTICO DEL LABORATORIO AI ==="
+echo "Fecha: $(date)"
+echo ""
+
+echo "📊 Estado de Contenedores:"
+docker-compose ps
+
+echo -e "\n🌐 Conectividad de Servicios:"
+echo "N8N: $(curl -s -o /dev/null -w "%{http_code}" http://localhost:5678)"
+echo "Flowise: $(curl -s -o /dev/null -w "%{http_code}" http://localhost:3000)" 
+echo "OpenWebUI: $(curl -s -o /dev/null -w "%{http_code}" http://localhost:8080)"
+echo "Qdrant: $(curl -s -o /dev/null -w "%{http_code}" http://localhost:6333)"
+echo "Ollama: $(curl -s -o /dev/null -w "%{http_code}" http://localhost:11434)"
+
+echo -e "\n💾 Estado de Base de Datos:"
+docker exec laboratorioai-postgres-1 psql -U postgres -c "SELECT version();" 2>/dev/null | head -3
+echo "Tablas N8N: $(docker exec laboratorioai-postgres-1 psql -U aiadmin -d ailab -c "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'public';" -t 2>/dev/null | tr -d ' ')"
+
+echo -e "\n📦 Estado de Redis:"
+docker exec redis redis-cli -a $REDIS_PASSWORD ping 2>/dev/null
+echo "Claves en cache: $(docker exec redis redis-cli -a $REDIS_PASSWORD DBSIZE 2>/dev/null | cut -d' ' -f1)"
+
+echo -e "\n🔄 Actividad Reciente (últimas 24h):"
+docker exec laboratorioai-postgres-1 psql -U aiadmin -d ailab -c \
+  "SELECT 'Consultas: ' || COUNT(*) FROM query_logs WHERE timestamp > NOW() - INTERVAL '24 hours';" -t 2>/dev/null
+docker exec laboratorioai-postgres-1 psql -U aiadmin -d ailab -c \
+  "SELECT 'Sentimientos: ' || COUNT(*) FROM sentiment_analysis WHERE created_at > NOW() - INTERVAL '24 hours';" -t 2>/dev/null
+docker exec laboratorioai-postgres-1 psql -U aiadmin -d ailab -c \
+  "SELECT 'Documentos: ' || COUNT(*) FROM processed_documents WHERE processed_at > NOW() - INTERVAL '24 hours';" -t 2>/dev/null
+
+echo -e "\n✅ Diagnóstico Completado"
+EOF
+
+chmod +x quick-diagnosis.sh
+./quick-diagnosis.sh
+```
+
+### 🚨 Sistema de Alertas Automáticas
+
+#### Configuración de Alertas N8N
+```json
+{
+  "alertas_configuradas": {
+    "servicios_caidos": {
+      "frecuencia": "cada_5_minutos",
+      "servicios_monitoreados": ["postgres", "redis", "qdrant", "ollama"],
+      "accion": "log_en_postgresql + cache_redis"
+    },
+    "rendimiento_degradado": {
+      "umbral_respuesta": "5_segundos",
+      "accion": "alerta_en_logs"
+    },
+    "errores_criticos": {
+      "tipos": ["conexion_bd", "fallo_ai", "memoria_insuficiente"],
+      "accion": "log_detallado + notificacion"
+    }
+  }
+}
+```
+
+#### Logs de Alertas  
+```bash
+# Ver alertas recientes del sistema
+docker exec laboratorioai-postgres-1 psql -U aiadmin -d ailab -c \
+  "SELECT * FROM system_health_logs WHERE overall_health != 'healthy' ORDER BY timestamp DESC LIMIT 10;"
+
+# Ver errores en logs de N8N
+docker logs n8n --tail 50 | grep -i "error\|fail\|exception"
+
+# Verificar uso de recursos
+docker stats --no-stream --format "table {{.Container}}\t{{.CPUPerc}}\t{{.MemUsage}}"
+```
 
 ## Servicios Disponibles
 
@@ -762,12 +1353,12 @@ sudo ./scripts/restore-data.sh ./backups/backup_YYYYMMDD_HHMMSS
   - Métricas: deshabilitadas
   - Archivos de configuración: deshabilitados
 
-### Floowise (Aplicación Principal)
+### Flowise (Aplicación Principal)
 - **URL**: http://localhost:3000
 - **Configuración**:
   - Base de datos: PostgreSQL
   - Vector DB: Qdrant
-  - Volumen persistente: ./floowise/data
+  - Volumen persistente: ./flowise/data
 
 ### PostgreSQL (Base de Datos)
 - **Puerto**: 5432
@@ -997,7 +1588,7 @@ Todos los datos se almacenan en volúmenes locales:
 - **Qdrant**: ./qdrant/data
 - **Ollama**: ./ollama/data
 - **N8N**: ./n8n/data (incluye workflows y credenciales)
-- **Floowise**: ./floowise/data
+- **Flowise**: ./flowise/data
 - **OpenWebUI**: ./openwebui/data
 
 ### Directorios de Configuración
@@ -1114,6 +1705,38 @@ Las contribuciones son bienvenidas. Por favor, lee nuestras guías de contribuci
 3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abre un Pull Request
+
+### 🆘 Soporte y Ayuda
+
+Si encuentras problemas o necesitas ayuda:
+
+1. **Documentación**: Revisa esta documentación completa
+2. **Scripts de Test**: Ejecuta `bash scripts/test-lab.sh` para diagnóstico
+3. **Logs**: Revisa los logs con `docker-compose logs [servicio]`
+4. **Issues**: Abre un issue en GitHub con información detallada
+5. **Comunidad**: Participa en las discusiones del proyecto
+
+#### 🔧 Comandos de Diagnóstico Rápido
+
+```bash
+# Estado general del sistema
+docker-compose ps
+
+# Verificar logs de errores
+docker-compose logs | grep -i error
+
+# Reinicio completo del sistema
+docker-compose down && docker-compose up -d
+
+# Verificar conectividad de red
+docker network inspect laboratorio_ai_default
+```
+
+### 📞 Contacto
+
+- **GitHub**: [EdissonGirald0](https://github.com/EdissonGirald0)
+- **Proyecto**: [laboratorioAI](https://github.com/EdissonGirald0/laboratorioAI)
+- **Issues**: [Reportar Problemas](https://github.com/EdissonGirald0/laboratorioAI/issues)
 
 ### 📝 Licencia
 

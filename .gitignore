@@ -49,7 +49,7 @@ postgres/data/
 qdrant/data/
 ollama/data/
 n8n/data/
-floowise/data/
+flowise/data/
 openwebui/data/
 redis/data/
 

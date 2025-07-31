@@ -16,6 +16,7 @@ QDRANT_API_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
 POSTGRES_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
 POSTGRES_NON_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
 REDIS_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+FLOWISE_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
 
 # Crear el archivo .env
 cat > .env << EOL
@@ -75,6 +76,12 @@ FLOOWISE_HOST=0.0.0.0
 FLOOWISE_PORT=3000
 DATABASE_URL=postgresql://aiadmin:${POSTGRES_NON_ROOT_PASSWORD}@host.docker.internal:5432/ailab
 QDRANT_URL=http://host.docker.internal:6333
+
+# Flowise
+FLOWISE_USERNAME=admin
+FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
+FLOWISE_HOST=0.0.0.0
+FLOWISE_PORT=3000
 EOL
 
 # Establecer permisos correctos
@@ -86,6 +93,7 @@ echo -e "${YELLOW}Guarda estas credenciales en un lugar seguro:${NC}"
 echo -e "POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
 echo -e "POSTGRES_NON_ROOT_PASSWORD: ${POSTGRES_NON_ROOT_PASSWORD}"
 echo -e "REDIS_PASSWORD: ${REDIS_PASSWORD}"
+echo -e "FLOWISE_PASSWORD: ${FLOWISE_PASSWORD}"
 echo -e "N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}"
 echo -e "WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}"
 echo -e "QDRANT_API_KEY: ${QDRANT_API_KEY}" 
