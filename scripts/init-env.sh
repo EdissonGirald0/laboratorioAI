@@ -15,17 +15,23 @@ QDRANT_API_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
 # Generar contraseñas
 POSTGRES_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
 POSTGRES_NON_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+REDIS_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
 
 # Crear el archivo .env
 cat > .env << EOL
 # PostgreSQL
-POSTGRES_USER=aiadmin
+POSTGRES_USER=postgres
 POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
 POSTGRES_DB=ailab
 POSTGRES_NON_ROOT_USER=aiadmin
 POSTGRES_NON_ROOT_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
 POSTGRES_HOST=host.docker.internal
 POSTGRES_PORT=5432
+
+# Redis
+REDIS_HOST=host.docker.internal
+REDIS_PORT=6379
+REDIS_PASSWORD=${REDIS_PASSWORD}
 
 # Qdrant
 QDRANT_HOST=host.docker.internal
@@ -50,8 +56,19 @@ N8N_HOST=localhost
 N8N_PORT=5678
 N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
 N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-DB_TYPE=sqlite
-DB_SQLITE_DATABASE=/home/node/.n8n/database.sqlite
+DB_TYPE=postgresdb
+DB_POSTGRESDB_HOST=postgres
+DB_POSTGRESDB_PORT=5432
+DB_POSTGRESDB_DATABASE=ailab
+DB_POSTGRESDB_USER=aiadmin
+DB_POSTGRESDB_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+N8N_USER_MANAGEMENT_DISABLED=true
+N8N_DIAGNOSTICS_ENABLED=false
+N8N_DIAGNOSTICS_CONFIG_ENABLED=false
+N8N_METRICS=false
+QUEUE_BULL_REDIS_HOST=redis
+QUEUE_BULL_REDIS_PORT=6379
+QUEUE_BULL_REDIS_PASSWORD=${REDIS_PASSWORD}
 
 # Floowise
 FLOOWISE_HOST=0.0.0.0
@@ -68,5 +85,7 @@ echo -e "${YELLOW}Nota: Las contraseñas y claves se han generado automáticamen
 echo -e "${YELLOW}Guarda estas credenciales en un lugar seguro:${NC}"
 echo -e "POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
 echo -e "POSTGRES_NON_ROOT_PASSWORD: ${POSTGRES_NON_ROOT_PASSWORD}"
+echo -e "REDIS_PASSWORD: ${REDIS_PASSWORD}"
 echo -e "N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}"
-echo -e "WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}" 
+echo -e "WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}"
+echo -e "QDRANT_API_KEY: ${QDRANT_API_KEY}" 

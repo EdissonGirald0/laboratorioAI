@@ -43,10 +43,46 @@ volumes:
       type: none
       o: bind
       device: ${PWD}/openwebui/data
+  redis_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/redis/data
+
+# Templates para servicios reutilizables
+x-n8n: &service-n8n
+  image: n8nio/n8n:latest
+  networks: ['laboratorio_ai']
+  environment:
+    - NODE_ENV=development
+    - N8N_PROTOCOL=http
+    - N8N_HOST=localhost
+    - N8N_PORT=5678
+    - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+    - N8N_DIAGNOSTICS_ENABLED=false
+    - N8N_PERSONALIZATION_ENABLED=false
+    - N8N_USER_MANAGEMENT_DISABLED=true
+    - N8N_USER_MANAGEMENT_JWT_SECRET=${N8N_ENCRYPTION_KEY}
+    - DB_TYPE=postgresdb
+    - DB_POSTGRESDB_HOST=postgres
+    - DB_POSTGRESDB_PORT=5432
+    - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+    - DB_POSTGRESDB_USER=${POSTGRES_NON_ROOT_USER}
+    - DB_POSTGRESDB_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+    - QUEUE_BULL_REDIS_HOST=redis
+    - QUEUE_BULL_REDIS_PORT=6379
+    - QUEUE_BULL_REDIS_PASSWORD=${REDIS_PASSWORD}
+    - EXECUTIONS_MODE=queue
+    - QUEUE_HEALTH_CHECK_ACTIVE=true
+  env_file:
+    - path: .env
+      required: true
 
 services:
   postgres:
-    image: postgres:16
+    image: postgres:16-alpine
+    hostname: postgres
     restart: always
     environment:
       - POSTGRES_USER
@@ -56,7 +92,7 @@ services:
       - POSTGRES_NON_ROOT_PASSWORD
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
+      - ./postgres/init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 5s
@@ -64,6 +100,46 @@ services:
       retries: 10
     networks:
       - laboratorio_ai
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Servicio para importar datos iniciales de N8N
+  n8n-import:
+    <<: *service-n8n
+    hostname: n8n-import
+    container_name: n8n-import
+    entrypoint: /bin/sh
+    command:
+      - "-c"
+      - "sleep 10 && n8n import:credentials --separate --input=/workflows || true && n8n import:workflow --separate --input=/workflows || true"
+    volumes:
+      - ./n8n/workflows:/workflows
+      - ./n8n/credentials:/credentials
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  # Servicio principal de N8N
+  n8n:
+    <<: *service-n8n
+    hostname: n8n
+    container_name: n8n
+    restart: always
+    ports:
+      - "5678:5678"
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./n8n/workflows:/home/node/.n8n/workflows
+      - ./n8n/credentials:/home/node/.n8n/credentials
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      n8n-import:
+        condition: service_completed_successfully
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -85,10 +161,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   ollama:
-    image: localaidocker-ollama
-    build:
-      context: .
-      dockerfile: Dockerfile.ollama
+    image: ollama/ollama:latest
     container_name: ollama
     restart: unless-stopped
     ports:
@@ -124,30 +197,22 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  n8n:
-    image: docker.n8n.io/n8nio/n8n:latest
-    restart: always
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
     ports:
-      - "5678:5678"
-    environment:
-      - NODE_ENV=development
-      - N8N_PROTOCOL=http
-      - N8N_HOST=localhost
-      - N8N_PORT=5678
-      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
-      - N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
-      - N8N_USER_MANAGEMENT_DISABLED=true
-      - N8N_DIAGNOSTICS_ENABLED=false
-      - N8N_DIAGNOSTICS_CONFIG_ENABLED=false
-      - N8N_METRICS=false
-      - N8N_DEPLOYMENT_TYPE=main
-      - N8N_DISABLE_PRODUCTION_MAIN_PROCESS=false
-      - N8N_DISABLE_WEBHOOK_DEREGISTRATION_SHUTDOWN=true
-      - N8N_CONFIG_FILES_ENABLED=false
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     networks:
       - laboratorio_ai
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   floowise:
     build: ./floowise

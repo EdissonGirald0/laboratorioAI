@@ -51,6 +51,13 @@ ollama/data/
 n8n/data/
 floowise/data/
 openwebui/data/
+redis/data/
+
+# Archivos específicos de Redis
+redis/data/dump.rdb
+redis/data/appendonlydir/
+redis/data/*.aof
+redis/data/*.rdb
 
 # Archivos de configuración
 .env
