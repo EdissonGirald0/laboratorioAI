@@ -84,7 +84,6 @@ volumes:
       o: bind
       device: ${PWD}/openwebui/data
 
-services:
   postgres:
     image: postgres:latest
     restart: always
