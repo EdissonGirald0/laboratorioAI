@@ -1,0 +1,10 @@
+FROM ollama/ollama:latest
+
+# Configurar el directorio de trabajo
+WORKDIR /root
+
+# Exponer el puerto de Ollama
+EXPOSE 11434
+
+# Comando por defecto
+CMD ["ollama", "serve"]

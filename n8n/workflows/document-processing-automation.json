@@ -1,0 +1,225 @@
+{
+  "name": "Automatización de Procesamiento de Documentos",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "procesar-documento",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "5c5e6e5d-3b5b-4d5d-9d5d-5d5d5d5d5d5d",
+      "name": "Webhook - Recibir Documento",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "notes": "Punto de entrada del workflow. Recibe documentos vía HTTP POST para procesamiento automático."
+    },
+    {
+      "parameters": {
+        "jsCode": "/*\n * PREPARACIÓN DE DATOS DEL DOCUMENTO\n * \n * Este nodo procesa los datos del documento recibido vía webhook:\n * - Extrae la información del payload JSON\n * - Valida que existan los campos requeridos\n * - Genera un ID único si no se proporciona\n * - Prepara los datos para el procesamiento posterior\n */\n\n// Extraer datos del documento del payload del webhook\nconst documentData = $input.first().json;\n\n// Validar campos requeridos\nif (!documentData.file_url && !documentData.file_content) {\n  throw new Error('Falta file_url o file_content - se requiere al menos uno');\n}\n\n// Preparar datos para procesamiento\nreturn {\n  document_id: documentData.document_id || `doc_${Date.now()}`,\n  file_url: documentData.file_url,\n  file_content: documentData.file_content,\n  metadata: documentData.metadata || {},\n  processing_timestamp: new Date().toISOString(),\n  source: documentData.source || 'api'\n};"
+      },
+      "id": "7d8e9f0a-1b2c-3d4e-5f67-890123456789",
+      "name": "Preparar Datos del Documento",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "notes": "Valida y estructura los datos del documento para su procesamiento posterior."
+    },
+    {
+      "parameters": {
+        "url": "http://ollama:11434/api/embeddings",
+        "options": {
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "requestMethod": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"nomic-embed-text\",\n  \"prompt\": \"{{ $json.file_content }}\"\n}"
+      },
+      "id": "9a0b1c2d-3e4f-5678-9abc-def012345678",
+      "name": "Generar Embeddings con Ollama",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300],
+      "notes": "Utiliza Ollama para generar embeddings vectoriales del contenido del documento usando el modelo nomic-embed-text."
+    },
+    {
+      "parameters": {
+        "url": "http://qdrant:6333/collections/documents/points",
+        "options": {
+          "headers": {
+            "Content-Type": "application/json",
+            "api-key": "={{ $env.QDRANT_API_KEY }}"
+          }
+        },
+        "requestMethod": "PUT",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"points\": [\n    {\n      \"id\": \"{{ $('Preparar Datos del Documento').item.json.document_id }}\",\n      \"vector\": {{ $json.embedding }},\n      \"payload\": {\n        \"document_id\": \"{{ $('Preparar Datos del Documento').item.json.document_id }}\",\n        \"content\": \"{{ $('Preparar Datos del Documento').item.json.file_content }}\",\n        \"metadata\": {{ $('Preparar Datos del Documento').item.json.metadata }},\n        \"timestamp\": \"{{ $('Preparar Datos del Documento').item.json.processing_timestamp }}\",\n        \"source\": \"{{ $('Preparar Datos del Documento').item.json.source }}\"\n      }\n    }\n  ]\n}"
+      },
+      "id": "b1c2d3e4-f5g6-7890-1234-567890abcdef",
+      "name": "Almacenar en Qdrant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300],
+      "notes": "Guarda los embeddings y metadatos del documento en la base de datos vectorial Qdrant para búsquedas semánticas."
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list"
+        },
+        "table": {
+          "__rl": true,
+          "value": "documents",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "document_id": "={{ $('Preparar Datos del Documento').item.json.document_id }}",
+            "file_url": "={{ $('Preparar Datos del Documento').item.json.file_url }}",
+            "metadata": "={{ JSON.stringify($('Preparar Datos del Documento').item.json.metadata) }}",
+            "processed_at": "={{ $('Preparar Datos del Documento').item.json.processing_timestamp }}",
+            "status": "procesado",
+            "source": "={{ $('Preparar Datos del Documento').item.json.source }}"
+          }
+        }
+      },
+      "id": "c2d3e4f5-g6h7-8901-2345-678901bcdefg",
+      "name": "Guardar Metadatos en PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-main",
+          "name": "Base de Datos PostgreSQL Principal"
+        }
+      },
+      "notes": "Almacena los metadatos del documento en PostgreSQL para tracking y auditoría del procesamiento."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"document_id\": \"{{ $('Preparar Datos del Documento').item.json.document_id }}\",\n  \"message\": \"Documento procesado exitosamente\",\n  \"processed_at\": \"{{ $('Preparar Datos del Documento').item.json.processing_timestamp }}\",\n  \"vector_stored\": true,\n  \"metadata_stored\": true,\n  \"description\": \"El documento ha sido procesado, vectorizado y almacenado correctamente en el sistema\"\n}"
+      },
+      "id": "d3e4f5g6-h7i8-9012-3456-789012cdefgh",
+      "name": "Respuesta de Éxito",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 300],
+      "notes": "Envía una respuesta de éxito al cliente indicando que el documento fue procesado correctamente."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"{{ $json.error?.message || 'Error en el procesamiento del documento' }}\",\n  \"document_id\": \"{{ $('Preparar Datos del Documento').item?.json?.document_id || 'desconocido' }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"description\": \"Ocurrió un error durante el procesamiento del documento\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "e4f5g6h7-i8j9-0123-4567-890123defghi",
+      "name": "Respuesta de Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1340, 480],
+      "notes": "Maneja errores durante el procesamiento y envía una respuesta informativa al cliente."
+    }
+  ],
+  "connections": {
+    "Webhook - Recibir Documento": {
+      "main": [
+        [
+          {
+            "node": "Preparar Datos del Documento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar Datos del Documento": {
+      "main": [
+        [
+          {
+            "node": "Generar Embeddings con Ollama",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Embeddings con Ollama": {
+      "main": [
+        [
+          {
+            "node": "Almacenar en Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Almacenar en Qdrant": {
+      "main": [
+        [
+          {
+            "node": "Guardar Metadatos en PostgreSQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar Metadatos en PostgreSQL": {
+      "main": [
+        [
+          {
+            "node": "Respuesta de Éxito",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": {
+      "errorWorkflow": {
+        "__rl": true,
+        "value": "",
+        "mode": "list"
+      }
+    }
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "1",
+      "name": "automatización"
+    },
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "2",
+      "name": "procesamiento-documentos"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "1"
+}

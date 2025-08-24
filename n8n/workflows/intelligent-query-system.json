@@ -1,0 +1,239 @@
+{
+  "name": "Sistema de Consultas Inteligentes",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "consulta-inteligente",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1b2c3d4-e5f6-g7h8-i9j0-k1l2m3n4o5p6",
+      "name": "Webhook - Recibir Consulta",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "webhookId": "query-webhook-123456789",
+      "notes": "Punto de entrada para consultas. Recibe la pregunta del usuario y parámetros de búsqueda."
+    },
+    {
+      "parameters": {
+        "jsCode": "/*\n * PROCESAMIENTO DE CONSULTA INTELIGENTE\n * \n * Este nodo procesa la consulta entrante del usuario:\n * - Valida que la consulta no esté vacía\n * - Extrae parámetros de búsqueda (límite, umbral, filtros)\n * - Prepara los datos para la búsqueda semántica\n * - Genera un ID único para seguimiento\n */\n\n// Procesar la consulta entrante\nconst queryData = $input.first().json;\n\n// Validar consulta\nif (!queryData.query) {\n  throw new Error('Falta el parámetro query - la consulta es requerida');\n}\n\n// Extraer parámetros con valores por defecto\nconst query = queryData.query;\nconst limit = queryData.limit || 5;\nconst threshold = queryData.threshold || 0.7;\nconst filters = queryData.filters || {};\n\nreturn {\n  original_query: query,\n  search_limit: limit,\n  similarity_threshold: threshold,\n  filters: filters,\n  query_id: `query_${Date.now()}`,\n  timestamp: new Date().toISOString()\n};"
+      },
+      "id": "b2c3d4e5-f6g7-h8i9-j0k1-l2m3n4o5p6q7",
+      "name": "Procesar Consulta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [460, 300],
+      "notes": "Valida y procesa la consulta del usuario, extrae parámetros de búsqueda."
+    },
+    {
+      "parameters": {
+        "url": "http://ollama:11434/api/embeddings",
+        "options": {
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "requestMethod": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"nomic-embed-text\",\n  \"prompt\": \"{{ $json.original_query }}\"\n}"
+      },
+      "id": "c3d4e5f6-g7h8-i9j0-k1l2-m3n4o5p6q7r8",
+      "name": "Generar Embedding de Consulta",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [680, 300],
+      "notes": "Convierte la consulta del usuario en un vector usando Ollama para búsqueda semántica."
+    },
+    {
+      "parameters": {
+        "url": "http://qdrant:6333/collections/documents/points/search",
+        "options": {
+          "headers": {
+            "Content-Type": "application/json",
+            "api-key": "={{ $env.QDRANT_API_KEY }}"
+          }
+        },
+        "requestMethod": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"vector\": {{ $json.embedding }},\n  \"limit\": {{ $('Procesar Consulta').item.json.search_limit }},\n  \"score_threshold\": {{ $('Procesar Consulta').item.json.similarity_threshold }},\n  \"with_payload\": true,\n  \"with_vector\": false\n}"
+      },
+      "id": "d4e5f6g7-h8i9-j0k1-l2m3-n4o5p6q7r8s9",
+      "name": "Búsqueda Semántica en Qdrant",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [900, 300],
+      "notes": "Realiza búsqueda de similitud vectorial en Qdrant para encontrar documentos relevantes."
+    },
+    {
+      "parameters": {
+        "jsCode": "/*\n * PROCESAMIENTO DE RESULTADOS DE BÚSQUEDA\n * \n * Este nodo procesa los resultados de la búsqueda semántica:\n * - Extrae los documentos encontrados\n * - Formatea la información para la respuesta\n * - Prepara el contexto para la generación de respuesta\n * - Calcula estadísticas de la búsqueda\n */\n\nconst searchResults = $input.first().json.result || [];\nconst queryInfo = $('Procesar Consulta').first().json;\n\n// Procesar resultados\nconst documents = searchResults.map(result => {\n  return {\n    document_id: result.payload.document_id,\n    content: result.payload.content,\n    score: result.score,\n    metadata: result.payload.metadata,\n    timestamp: result.payload.timestamp,\n    source: result.payload.source\n  };\n});\n\n// Crear contexto para la respuesta\nconst context = documents.map(doc => doc.content).join('\\n\\n');\n\nreturn {\n  query_id: queryInfo.query_id,\n  original_query: queryInfo.original_query,\n  documents_found: documents.length,\n  documents: documents,\n  context: context,\n  search_timestamp: new Date().toISOString(),\n  has_results: documents.length > 0\n};"
+      },
+      "id": "e5f6g7h8-i9j0-k1l2-m3n4-o5p6q7r8s9t0",
+      "name": "Procesar Resultados",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 300],
+      "notes": "Procesa y formatea los resultados de búsqueda para preparar el contexto."
+    },
+    {
+      "parameters": {
+        "url": "http://ollama:11434/api/generate",
+        "options": {
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "requestMethod": "POST",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"llama3.2\",\n  \"prompt\": \"Contexto:\\n{{ $json.context }}\\n\\nPregunta: {{ $json.original_query }}\\n\\nInstrucciones: Responde la pregunta basándote únicamente en el contexto proporcionado. Si la información no está disponible en el contexto, indica que no puedes responder con la información disponible. Proporciona una respuesta clara, concisa y útil en español.\",\n  \"stream\": false\n}"
+      },
+      "id": "f6g7h8i9-j0k1-l2m3-n4o5-p6q7r8s9t0u1",
+      "name": "Generar Respuesta con IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4,
+      "position": [1340, 300],
+      "notes": "Utiliza Ollama para generar una respuesta inteligente basada en el contexto encontrado."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"query_id\": \"{{ $('Procesar Resultados').item.json.query_id }}\",\n  \"question\": \"{{ $('Procesar Resultados').item.json.original_query }}\",\n  \"answer\": \"{{ $json.response }}\",\n  \"sources\": {\n    \"documents_found\": {{ $('Procesar Resultados').item.json.documents_found }},\n    \"documents\": {{ JSON.stringify($('Procesar Resultados').item.json.documents) }}\n  },\n  \"metadata\": {\n    \"search_timestamp\": \"{{ $('Procesar Resultados').item.json.search_timestamp }}\",\n    \"response_generated_at\": \"{{ new Date().toISOString() }}\"\n  }\n}"
+      },
+      "id": "g7h8i9j0-k1l2-m3n4-o5p6-q7r8s9t0u1v2",
+      "name": "Respuesta Exitosa",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1560, 300],
+      "notes": "Envía la respuesta completa con la información encontrada y generada por IA."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"query_id\": \"{{ $('Procesar Consulta').item?.json?.query_id || 'desconocido' }}\",\n  \"question\": \"{{ $('Procesar Consulta').item?.json?.original_query || 'no disponible' }}\",\n  \"answer\": \"Lo siento, no pude encontrar información relevante para tu consulta en la base de conocimientos.\",\n  \"sources\": {\n    \"documents_found\": 0,\n    \"documents\": []\n  },\n  \"metadata\": {\n    \"search_timestamp\": \"{{ new Date().toISOString() }}\",\n    \"error\": \"No se encontraron documentos relevantes\"\n  }\n}"
+      },
+      "id": "h8i9j0k1-l2m3-n4o5-p6q7-r8s9t0u1v2w3",
+      "name": "Sin Resultados",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1560, 480],
+      "notes": "Respuesta cuando no se encuentran documentos relevantes para la consulta."
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": false,\n  \"error\": \"{{ $json.error?.message || 'Error interno del sistema' }}\",\n  \"query_id\": \"{{ $('Procesar Consulta').item?.json?.query_id || 'desconocido' }}\",\n  \"timestamp\": \"{{ new Date().toISOString() }}\",\n  \"description\": \"Ocurrió un error durante el procesamiento de la consulta\"\n}",
+        "options": {
+          "responseCode": 500
+        }
+      },
+      "id": "i9j0k1l2-m3n4-o5p6-q7r8-s9t0u1v2w3x4",
+      "name": "Respuesta de Error",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1560, 660],
+      "notes": "Maneja errores técnicos durante el procesamiento de la consulta."
+    }
+  ],
+  "connections": {
+    "Webhook - Recibir Consulta": {
+      "main": [
+        [
+          {
+            "node": "Procesar Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Consulta": {
+      "main": [
+        [
+          {
+            "node": "Generar Embedding de Consulta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Embedding de Consulta": {
+      "main": [
+        [
+          {
+            "node": "Búsqueda Semántica en Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Búsqueda Semántica en Qdrant": {
+      "main": [
+        [
+          {
+            "node": "Procesar Resultados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Procesar Resultados": {
+      "main": [
+        [
+          {
+            "node": "Generar Respuesta con IA",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Sin Resultados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar Respuesta con IA": {
+      "main": [
+        [
+          {
+            "node": "Respuesta Exitosa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "3",
+      "name": "consultas-inteligentes"
+    },
+    {
+      "createdAt": "2024-01-01T00:00:00.000Z",
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "id": "4",
+      "name": "búsqueda-semántica"
+    }
+  ],
+  "triggerCount": 1,
+  "updatedAt": "2024-01-01T00:00:00.000Z",
+  "versionId": "2"
+}
