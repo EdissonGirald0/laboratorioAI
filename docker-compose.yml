@@ -1,5 +1,3 @@
-# Eliminar la línea de versión
-# version: '3.8'
 
 networks:
   laboratorio_ai:
