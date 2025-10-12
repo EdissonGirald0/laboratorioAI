@@ -1,16 +1,6 @@
 # Laboratorio AI Local
 
-[![GitHub Actions](https://github.com/Ediss## 🔄 Estado del Sistemairald0/laboratorioAI/actions/workflows/main.y### 🤝 Contribuir
-
-Para contribuir al proyecto:
-
-1. Haz fork del repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### 📝 Licenciag)](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml)
+[![GitHub Actions](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml/badge.svg)](https://github.com/EdissonGirald0/laboratorioAI/actions/workflows/main.yml)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-green.svg)](LICENSE)
 
 ## 📋 Información del Repositorio
@@ -21,20 +11,17 @@ Este repositorio contiene la configuración y scripts necesarios para desplegar 
 
 ```
 laboratorioAI/
-├── data/
-│   ├── postgres/
-│   ├── qdrant/
-│   ├── ollama/
-│   ├── n8n/
-│   ├── floowise/
-│   ├── openwebui/
-│   └── redis/
-├── scripts/
-│   ├── init-env.sh
-│   ├── backup-data.sh
-│   └── restore-data.sh
-└── .devcontainer/
-    └── post-create.sh
+├── docs/                # 📚 Documentación completa
+├── scripts/             # 🔧 Scripts de automatización
+├── n8n/                 # 🤖 Workflows y credenciales
+├── config/              # 🔐 Configuración sensible
+├── backups/             # 💾 Respaldos
+├── postgres/            # 🗄️ Base de datos
+├── qdrant/              # 🔍 Base de datos vectorial
+├── ollama/              # 🧠 Modelos de IA
+├── floowise/            # 🌊 Procesamiento de flujos
+├── openwebui/           # 🖥️ Interfaz web
+└── redis/               # ⚡ Caché y sesiones
 ```
 
 ### 🚀 Inicio Rápido
@@ -75,9 +62,9 @@ laboratorioAI/
    sudo systemctl restart docker
    ```
 
-## � Estado del Sistema
+## 🔄 Estado del Sistema
 
-Este repositorio contiene la configuración y scripts necesarios para desplegar un laboratorio de Inteligencia Artificial local utilizando Docker. El proyecto está diseñado para proporcionar un entorno completo y aislado para experimentar con diferentes modelos de IA y herramientas de procesamiento de datos.
+Ver documentación completa en [docs/PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md) para resumen ejecutivo y métricas del proyecto.
 
 ### 🔄 Flujo de Instalación
 
@@ -144,23 +131,7 @@ El script de configuración ahora soporta dos entornos principales:
 
 ### 📦 Estructura Completa del Repositorio
 
-### 🤝 Contribuciones
-
-Las contribuciones son bienvenidas. Por favor, lee nuestras guías de contribución antes de enviar un pull request:
-
-1. Haz fork del repositorio
-2. Crea una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abre un Pull Request
-
-### 📝 Licencia
-
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
-
-### 👥 Autores
-
-- **Edisson Giraldo** - *Desarrollo inicial* - [EdissonGirald0](https://github.com/EdissonGirald0)
+Ver documentación detallada en [docs/PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md)
 
 ## Requisitos Previos
 
@@ -200,7 +171,12 @@ chmod +x scripts/init-env.sh
 
 3. Iniciar los servicios:
 ```bash
-docker-compose up -d
+docker compose up -d
+```
+
+4. Configurar n8n automáticamente:
+```bash
+./scripts/setup-n8n-complete.sh
 ```
 
 ## Scripts de Mantenimiento
@@ -214,13 +190,13 @@ docker-compose up -d
 - Establece permisos correctos en el archivo .env
 - Muestra las credenciales generadas
 
-### Inicialización de Bases de Datos
+### Setup Completo de n8n
 ```bash
-./scripts/init-data.sh
+./scripts/setup-n8n-complete.sh
 ```
-- Crea usuarios y roles en PostgreSQL
-- Establece permisos necesarios
-- Configura la base de datos inicial
+- Importa 5 workflows automáticamente
+- Crea 5 credenciales automáticamente
+- Ahorro del 96% de tiempo (~80 min → 3 min)
 
 ### Backup de Datos
 ```bash
@@ -253,29 +229,30 @@ sudo ./scripts/restore-data.sh ./backups/backup_YYYYMMDD_HHMMSS
 
 ### OpenWebUI (Interfaz Web para Ollama)
 - **URL**: `http://localhost:8080`
-- **Versión**: v0.6.13
+- **Versión**: latest
 - **Configuración**:
   - Base de datos: SQLite
-  - Conexión a Ollama: http://host.docker.internal:11434/api
-  - Volumen persistente: ./openwebui/data
+  - Conexión a Ollama: `http://host.docker.internal:11434/api`
+  - Redis: Integrado para caché
+  - Volumen persistente: `./openwebui/data`
 
 ### n8n (Automatización)
 - **URL**: `http://localhost:5678`
-- **Versión**: latest (1.97.1)
+- **Versión**: latest
 - **Configuración**:
-  - Modo: `development`
-  - Gestión de usuarios: deshabilitada
-  - Diagnósticos: deshabilitados
-  - Métricas: deshabilitadas
-  - Archivos de configuración: deshabilitados
+  - Base de datos: PostgreSQL (n8n_db)
+  - Redis: Integrado para jobs
+  - 5 workflows incluidos
+  - 5 credenciales pre-configuradas
   - Volumen persistente: `./n8n/data`
 
-### Floowise (Aplicación Principal)
+### Flowise (Aplicación Principal)
 - **URL**: `http://localhost:3000`
 - **Configuración**:
-  - Base de datos: PostgreSQL
+  - Base de datos: PostgreSQL (ailab)
   - Vector DB: Qdrant
-  - Volumen persistente: ./floowise/data
+  - Redis: Integrado para cache
+  - Volumen persistente: `./floowise/data`
 
 ### PostgreSQL (Base de Datos)
 - **Puerto**: 5432
@@ -286,12 +263,20 @@ sudo ./scripts/restore-data.sh ./backups/backup_YYYYMMDD_HHMMSS
   - Volumen persistente: ./postgres/data
 
 ### Qdrant (Base de Datos Vectorial)
-- **URL**: http://localhost:6333
+- **URL**: `http://localhost:6333`
 - **Versión**: latest
 - **Configuración**:
-  - Puerto: 6333
+  - Puerto: `6333`
   - API Key: generada automáticamente
-  - Volumen persistente: ./qdrant/data
+  - Volumen persistente: `./qdrant/data`
+
+### Redis (Caché y Mensajería)
+- **Puerto**: `6379`
+- **Versión**: alpine
+- **Configuración**:
+  - Autenticación: habilitada
+  - Volumen persistente: `./redis/data`
+  - Usado por: OpenWebUI, n8n, Flowise
 
 ## Gestión de Datos
 
@@ -307,12 +292,12 @@ Todos los datos se almacenan en volúmenes locales:
 ### Reinicio de Servicios
 Para reiniciar todos los servicios:
 ```bash
-docker-compose down && docker-compose up -d
+docker compose down && docker compose up -d
 ```
 
 Para reiniciar un servicio específico:
 ```bash
-docker-compose restart <nombre-servicio>
+docker compose restart <nombre-servicio>
 ```
 
 ## Solución de Problemas
@@ -321,26 +306,53 @@ docker-compose restart <nombre-servicio>
 Si hay problemas de conexión entre servicios:
 1. Verificar que todos los contenedores estén en ejecución:
 ```bash
-docker-compose ps
+docker compose ps
 ```
 
 2. Verificar los logs de un servicio específico:
 ```bash
-docker-compose logs <nombre-servicio>
+docker compose logs <nombre-servicio>
 ```
 
+3. Ver documentación de troubleshooting:
+   - [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Problemas comunes
+   - [docs/REDIS_FIX.md](docs/REDIS_FIX.md) - Solución Redis/OpenWebUI
+
 ### Problemas con n8n
-- Si hay problemas con la clave de encriptación, verificar que N8N_ENCRYPTION_KEY esté correctamente configurada en .env
-- Los task runners están deshabilitados por defecto, pero se recomienda habilitarlos en futuras versiones
+- Si hay problemas con la clave de encriptación, verificar que `N8N_ENCRYPTION_KEY` esté correctamente configurada en `.env`
+- Para problemas con workflows o credenciales, ver [docs/N8N_API_SETUP.md](docs/N8N_API_SETUP.md)
+- Para automatización completa, ver [docs/COMPLETE_AUTOMATION.md](docs/COMPLETE_AUTOMATION.md)
 
-## Notas de Actualización
+## 📝 Notas de Actualización
 
-### Cambios Recientes
-- Movidos scripts de inicialización a la carpeta scripts/
-- Mejorado el sistema de backup y restauración
-- Omitidos los datos de Ollama del backup
-- Agregada generación automática de API Key para Qdrant
-- Optimizada la gestión de permisos en los scripts
+### Versión 2.0.0 (12 de octubre de 2025)
+
+**✨ Reorganización Completa:**
+- 📚 Documentación movida a `docs/` (17 archivos)
+- 🔐 Archivos sensibles en `config/`
+- 💾 Backups organizados en `backups/`
+- 📖 READMEs contextuales en cada carpeta
+
+**🤖 Automatización 96%:**
+- ✅ Auto-importación de workflows n8n
+- ✅ Auto-creación de credenciales
+- ✅ Script maestro `setup-n8n-complete.sh`
+- ⏱️ Ahorro: ~80 min → 3 min
+
+**🔧 Correcciones Técnicas:**
+- ✅ Fix autenticación Redis en OpenWebUI
+- ✅ Scripts actualizados con nuevas rutas
+- ✅ `.gitignore` optimizado por categorías
+
+**📚 Documentación Nueva:**
+- `PROJECT_SUMMARY.md` - Resumen ejecutivo
+- `PROJECT_STRUCTURE.md` - Estructura detallada
+- `FINAL_REPORT.md` - Reporte completo
+- `REDIS_FIX.md` - Solución problema Redis
+- `COMPLETE_AUTOMATION.md` - Guía automatización
+- Y 8 documentos adicionales
+
+Ver [CHANGELOG.md](CHANGELOG.md) para historial completo.
 
 ## 🤖 Automatización de n8n
 
@@ -404,10 +416,37 @@ La API Key se guarda automáticamente para futuros usos.
 ### Documentación Completa
 
 Ver documentación detallada en:
-- `docs/COMPLETE_AUTOMATION.md` - Guía completa
-- `docs/N8N_API_SETUP.md` - Configuración de API Key
+- [docs/COMPLETE_AUTOMATION.md](docs/COMPLETE_AUTOMATION.md) - Guía completa de automatización
+- [docs/N8N_API_SETUP.md](docs/N8N_API_SETUP.md) - Configuración de API Key
+- [docs/WORKFLOW_IMPORT_SUCCESS.md](docs/WORKFLOW_IMPORT_SUCCESS.md) - Resultados de importación
+- [docs/README.md](docs/README.md) - Índice completo de documentación
 
-## Contribuir
+## 📚 Documentación
+
+El proyecto incluye documentación completa en la carpeta `docs/`:
+
+### Para Empezar
+- [PROJECT_SUMMARY.md](docs/PROJECT_SUMMARY.md) - ⭐ Resumen ejecutivo
+- [QUICKSTART.md](docs/QUICKSTART.md) - Guía rápida
+- [CREDENTIALS.md](docs/CREDENTIALS.md) - Credenciales del sistema
+
+### Para Desarrolladores
+- [PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) - Estructura del proyecto
+- [COMPLETE_AUTOMATION.md](docs/COMPLETE_AUTOMATION.md) - Automatización
+- [CONTRIBUTING.md](docs/CONTRIBUTING.md) - Guía de contribución
+- [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Solución de problemas
+
+### Documentación Técnica
+- [OLLAMA.md](docs/OLLAMA.md) - Configuración de Ollama
+- [FLOOWISE.md](docs/FLOOWISE.md) - Configuración de Flowise
+- [INTEGRACIONES.md](docs/INTEGRACIONES.md) - Integraciones entre servicios
+- [REDIS_FIX.md](docs/REDIS_FIX.md) - Solución problema Redis
+
+Ver índice completo en [docs/README.md](docs/README.md)
+
+## 🤝 Contribuir
+
+Las contribuciones son bienvenidas. Ver [docs/CONTRIBUTING.md](docs/CONTRIBUTING.md) para guía detallada.
 
 1. Fork el repositorio
 2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
@@ -415,6 +454,21 @@ Ver documentación detallada en:
 4. Push a la rama (`git push origin feature/AmazingFeature`)
 5. Abrir un Pull Request
 
-## Licencia
+## 📄 Licencia
 
-Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles. 
+Este proyecto está bajo la Licencia MIT - ver el archivo [LICENSE](LICENSE) para más detalles.
+
+## 👥 Autores
+
+- **Edisson Giraldo** - [EdissonGirald0](https://github.com/EdissonGirald0)
+
+## 🙏 Agradecimientos
+
+- Comunidad de Docker
+- Proyecto Ollama
+- Proyecto n8n
+- Comunidad Open Source
+
+---
+
+**Desarrollado con ❤️ por Edisson Giraldo** 
