@@ -342,6 +342,71 @@ docker-compose logs <nombre-servicio>
 - Agregada generación automática de API Key para Qdrant
 - Optimizada la gestión de permisos en los scripts
 
+## 🤖 Automatización de n8n
+
+### Setup Automático Completo
+
+El proyecto incluye **automatización completa** para configurar n8n en segundos:
+
+```bash
+# Configuración completa automática (workflows + credenciales)
+./scripts/setup-n8n-complete.sh
+```
+
+Este comando ejecuta automáticamente:
+- ✅ Importación de 5 workflows
+- ✅ Creación de 5 credenciales
+- ✅ Validación de disponibilidad
+- ✅ Reporte detallado
+
+**Ahorro de tiempo: ~25 minutos → 15 segundos (99%)**
+
+### Scripts Individuales
+
+```bash
+# Solo workflows
+./scripts/auto-import-n8n-workflows.sh
+
+# Solo credenciales
+./scripts/auto-import-n8n-credentials.sh
+```
+
+### Requisito Previo
+
+**Primera vez solamente:** Genera una API Key en n8n
+
+1. Accede a: `http://localhost:5678`
+2. Ve a: `Settings → API`
+3. Crea una API Key
+4. Ejecuta: `./scripts/auto-import-n8n-workflows.sh "tu-api-key"`
+
+La API Key se guarda automáticamente para futuros usos.
+
+### Workflows Incluidos
+
+| Workflow | Descripción |
+|----------|-------------|
+| AI Chatbot with Memory | Chatbot con memoria usando Qdrant |
+| Document Processing Automation | Procesamiento automático de documentos |
+| AI Document Processing | Pipeline de procesamiento de documentos |
+| Intelligent Query System (ES/EN) | Sistema inteligente de consultas |
+
+### Credenciales Creadas
+
+| Credencial | Servicio |
+|------------|----------|
+| PostgreSQL Main | Base de datos n8n_db |
+| Redis Main | Cache y sesiones |
+| Ollama API | Modelos de IA |
+| Flowise API | Workflows de IA |
+| Qdrant | Base de datos vectorial |
+
+### Documentación Completa
+
+Ver documentación detallada en:
+- `docs/COMPLETE_AUTOMATION.md` - Guía completa
+- `docs/N8N_API_SETUP.md` - Configuración de API Key
+
 ## Contribuir
 
 1. Fork el repositorio

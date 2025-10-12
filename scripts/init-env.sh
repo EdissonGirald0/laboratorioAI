@@ -17,25 +17,15 @@ FLOWISE_API_KEY=$(openssl rand -base64 32 | tr -dc 'a-zA-Z0-9' | head -c 32)
 POSTGRES_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
 POSTGRES_NON_ROOT_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
 FLOWISE_USERNAME="admin"
-FLOWISE_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+# Flowise requiere al menos un carácter especial en la contraseña
+FLOWISE_PASSWORD="Admin@$(openssl rand -hex 8)!"
 
-# Configurar Redis
-REDIS_PASSWORD=$(openssl rand -base64 16 | tr -dc 'a-zA-Z0-9' | head -c 16)
+# Configurar Redis con autenticación
+REDIS_PASSWORD=$(openssl rand -hex 16)
 REDIS_URL="redis://:${REDIS_PASSWORD}@redis:6379"
 
-# Generar JSON de credenciales para Flowise
-CREDENTIAL_JSON=$(cat << EOF
-{
-  "ollama": {
-    "baseURL": "http://ollama:11434"
-  },
-  "qdrant": {
-    "url": "http://qdrant:6333",
-    "apiKey": "${QDRANT_API_KEY}"
-  }
-}
-EOF
-)
+# Generar JSON de credenciales para Flowise (en una sola línea)
+CREDENTIAL_JSON="{\"ollama\":{\"baseURL\":\"http://ollama:11434\"},\"qdrant\":{\"url\":\"http://qdrant:6333\",\"apiKey\":\"${QDRANT_API_KEY}\"}}"
 
 # Crear el archivo .env
 cat > .env << EOL
@@ -64,6 +54,10 @@ WEBUI_SECRET_KEY=${WEBUI_SECRET_KEY}
 WEBUI_HOST=0.0.0.0
 WEBUI_PORT=8080
 
+# Redis
+REDIS_PASSWORD=${REDIS_PASSWORD}
+REDIS_URL=${REDIS_URL}
+
 # n8n
 NODE_ENV=development
 N8N_PROTOCOL=http
@@ -71,14 +65,31 @@ N8N_HOST=localhost
 N8N_PORT=5678
 N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
 N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS=true
+N8N_BASIC_AUTH_USER=
+N8N_BASIC_AUTH_PASSWORD=
 DB_TYPE=sqlite
 DB_SQLITE_DATABASE=/home/node/.n8n/database.sqlite
+DB_POSTGRESDB_HOST=host.docker.internal
+DB_POSTGRESDB_PORT=5432
+DB_POSTGRESDB_DATABASE=ailab
+DB_POSTGRESDB_USER=aiadmin
+DB_POSTGRESDB_PASSWORD=${POSTGRES_NON_ROOT_PASSWORD}
+
+# SMTP (opcional para notificaciones)
+SMTP_HOST=
+SMTP_PORT=
+SMTP_USER=
+SMTP_PASSWORD=
 
 # Floowise
 FLOOWISE_HOST=0.0.0.0
 FLOOWISE_PORT=3000
+FLOWISE_API_KEY=${FLOWISE_API_KEY}
+FLOWISE_USERNAME=${FLOWISE_USERNAME}
+FLOWISE_PASSWORD=${FLOWISE_PASSWORD}
 DATABASE_URL=postgresql://aiadmin:${POSTGRES_NON_ROOT_PASSWORD}@host.docker.internal:5432/ailab
 QDRANT_URL=http://host.docker.internal:6333
+CREDENTIAL_JSON=${CREDENTIAL_JSON}
 EOL
 
 # Establecer permisos correctos
@@ -87,7 +98,20 @@ chmod 600 .env
 echo -e "${GREEN}Archivo .env creado exitosamente${NC}"
 echo -e "${YELLOW}Nota: Las contraseñas y claves se han generado automáticamente.${NC}"
 echo -e "${YELLOW}Guarda estas credenciales en un lugar seguro:${NC}"
-echo -e "POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
-echo -e "POSTGRES_NON_ROOT_PASSWORD: ${POSTGRES_NON_ROOT_PASSWORD}"
-echo -e "N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}"
-echo -e "WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}" 
+echo -e ""
+echo -e "${GREEN}PostgreSQL:${NC}"
+echo -e "  POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}"
+echo -e "  POSTGRES_NON_ROOT_PASSWORD: ${POSTGRES_NON_ROOT_PASSWORD}"
+echo -e ""
+echo -e "${GREEN}Redis:${NC}"
+echo -e "  REDIS_PASSWORD: (sin autenticación)"
+echo -e ""
+echo -e "${GREEN}Floowise:${NC}"
+echo -e "  FLOWISE_USERNAME: ${FLOWISE_USERNAME}"
+echo -e "  FLOWISE_PASSWORD: ${FLOWISE_PASSWORD}"
+echo -e "  FLOWISE_API_KEY: ${FLOWISE_API_KEY}"
+echo -e ""
+echo -e "${GREEN}Claves de seguridad:${NC}"
+echo -e "  N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}"
+echo -e "  WEBUI_SECRET_KEY: ${WEBUI_SECRET_KEY}"
+echo -e "  QDRANT_API_KEY: ${QDRANT_API_KEY}" 
