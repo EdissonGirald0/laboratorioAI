@@ -70,6 +70,25 @@ get_api_key() {
     return 1
 }
 
+# Función para verificar si un workflow ya existe
+workflow_exists() {
+    local workflow_name="$1"
+    
+    # Obtener todos los workflows y buscar por nombre
+    local response=$(curl -s -H "X-N8N-API-KEY: $API_KEY" "$N8N_API_BASE/workflows")
+    
+    # Verificar si el workflow ya existe (cualquier cantidad de veces)
+    local count=$(echo "$response" | jq -r "[.data[] | select(.name == \"$workflow_name\")] | length" 2>/dev/null)
+    
+    if [ "$count" -gt 0 ]; then
+        echo "$count"
+        return 0
+    else
+        echo "0"
+        return 1
+    fi
+}
+
 # Función para importar un workflow
 import_workflow() {
     local workflow_file="$1"
@@ -87,6 +106,20 @@ import_workflow() {
     if ! jq empty "$workflow_file" 2>/dev/null; then
         echo -e "${YELLOW}  ⚠️  Omitido: JSON inválido${NC}"
         return 3
+    fi
+    
+    # Obtener el nombre del workflow desde el JSON
+    local json_workflow_name=$(jq -r '.name // ""' "$workflow_file")
+    if [ -z "$json_workflow_name" ]; then
+        json_workflow_name="$workflow_name"
+    fi
+    
+    # Verificar si el workflow ya existe
+    local existing_count=$(workflow_exists "$json_workflow_name")
+    if [ "$existing_count" -gt 0 ]; then
+        echo -e "${BLUE}  ℹ️  Ya existe: ${json_workflow_name} (${existing_count} instancia(s))${NC}"
+        echo -e "${BLUE}  ⏭️  Omitiendo importación para evitar duplicados${NC}"
+        return 4  # Código especial para "ya existe"
     fi
     
     # Leer el contenido del workflow y filtrar solo los campos aceptados por la API
@@ -165,6 +198,7 @@ main() {
     local total_workflows=$(ls -1 "$WORKFLOW_DIR"/*.json 2>/dev/null | wc -l)
     local imported_count=0
     local skipped_count=0
+    local duplicate_count=0
     local error_count=0
     local auth_error=0
     
@@ -188,6 +222,8 @@ main() {
                 break
             elif [ $result -eq 3 ]; then
                 skipped_count=$((skipped_count + 1))
+            elif [ $result -eq 4 ]; then
+                duplicate_count=$((duplicate_count + 1))
             else
                 error_count=$((error_count + 1))
             fi
@@ -209,6 +245,9 @@ main() {
     echo -e "${GREEN}📊 RESUMEN DE IMPORTACIÓN:${NC}"
     echo ""
     echo -e "  ${GREEN}✅ Importados exitosamente: $imported_count${NC}"
+    if [ $duplicate_count -gt 0 ]; then
+        echo -e "  ${BLUE}ℹ️  Ya existían (omitidos): $duplicate_count${NC}"
+    fi
     if [ $skipped_count -gt 0 ]; then
         echo -e "  ${YELLOW}⚠️  Omitidos (vacíos/inválidos): $skipped_count${NC}"
     fi

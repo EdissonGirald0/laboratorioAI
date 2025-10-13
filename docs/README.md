@@ -11,6 +11,7 @@ Esta carpeta contiene toda la documentación del proyecto LaboratorioAI, organiz
 | **[QUICKSTART.md](./QUICKSTART.md)** | ⭐ Guía rápida para iniciar el sistema en minutos |
 | **[NAVIGATION.md](./NAVIGATION.md)** | 🗺️ Mapa de navegación - Encuentra cualquier cosa rápidamente |
 | **[AUTO_INIT_SUMMARY.md](./AUTO_INIT_SUMMARY.md)** | Resumen ejecutivo de auto-inicialización |
+| **[ANALISIS_DEVTOOLS.md](./ANALISIS_DEVTOOLS.md)** | 🧪 Análisis completo de scripts CLI de desarrollo |
 | **[README principal](../README.md)** | Documentación completa del proyecto (raíz) |
 
 ### 📊 Estructura y Estado

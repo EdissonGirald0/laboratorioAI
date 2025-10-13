@@ -58,9 +58,38 @@ get_api_key() {
     fi
 }
 
+# Función para verificar si una credencial ya existe
+credential_exists() {
+    local cred_name="$1"
+    
+    # Obtener todas las credenciales y buscar por nombre
+    local response=$(curl -s -H "X-N8N-API-KEY: $API_KEY" "$N8N_API_BASE/credentials")
+    
+    # Verificar si la credencial ya existe
+    local count=$(echo "$response" | jq -r "[.data[] | select(.name == \"$cred_name\")] | length" 2>/dev/null)
+    
+    # Si count está vacío o es null, retornar 0
+    if [ -z "$count" ] || [ "$count" = "null" ]; then
+        echo "0"
+        return 1
+    fi
+    
+    echo "$count"
+    return 0
+}
+
 # Función para crear credencial de PostgreSQL
 create_postgres_credential() {
     local cred_name="$1"
+    
+    # Verificar si la credencial ya existe
+    local existing_count=$(credential_exists "$cred_name")
+    if [ "$existing_count" -gt 0 ]; then
+        echo -e "${BLUE}  ℹ️  Ya existe: $cred_name (${existing_count} instancia(s))${NC}"
+        echo -e "${BLUE}  ⏭️  Omitiendo creación para evitar duplicados${NC}"
+        return 2  # Código para "ya existe"
+    fi
+    
     local response=$(curl -s -X POST \
         -H "Content-Type: application/json" \
         -H "X-N8N-API-KEY: $API_KEY" \
@@ -93,6 +122,15 @@ create_postgres_credential() {
 # Función para crear credencial de Redis
 create_redis_credential() {
     local cred_name="$1"
+    
+    # Verificar si la credencial ya existe
+    local existing_count=$(credential_exists "$cred_name")
+    if [ "$existing_count" -gt 0 ]; then
+        echo -e "${BLUE}  ℹ️  Ya existe: $cred_name (${existing_count} instancia(s))${NC}"
+        echo -e "${BLUE}  ⏭️  Omitiendo creación para evitar duplicados${NC}"
+        return 2  # Código para "ya existe"
+    fi
+    
     local response=$(curl -s -X POST \
         -H "Content-Type: application/json" \
         -H "X-N8N-API-KEY: $API_KEY" \
@@ -123,6 +161,15 @@ create_redis_credential() {
 # Función para crear credencial HTTP para Ollama
 create_ollama_credential() {
     local cred_name="$1"
+    
+    # Verificar si la credencial ya existe
+    local existing_count=$(credential_exists "$cred_name")
+    if [ "$existing_count" -gt 0 ]; then
+        echo -e "${BLUE}  ℹ️  Ya existe: $cred_name (${existing_count} instancia(s))${NC}"
+        echo -e "${BLUE}  ⏭️  Omitiendo creación para evitar duplicados${NC}"
+        return 2  # Código para "ya existe"
+    fi
+    
     local response=$(curl -s -X POST \
         -H "Content-Type: application/json" \
         -H "X-N8N-API-KEY: $API_KEY" \
@@ -150,6 +197,15 @@ create_ollama_credential() {
 # Función para crear credencial HTTP para Flowise
 create_flowise_credential() {
     local cred_name="$1"
+    
+    # Verificar si la credencial ya existe
+    local existing_count=$(credential_exists "$cred_name")
+    if [ "$existing_count" -gt 0 ]; then
+        echo -e "${BLUE}  ℹ️  Ya existe: $cred_name (${existing_count} instancia(s))${NC}"
+        echo -e "${BLUE}  ⏭️  Omitiendo creación para evitar duplicados${NC}"
+        return 2  # Código para "ya existe"
+    fi
+    
     local response=$(curl -s -X POST \
         -H "Content-Type: application/json" \
         -H "X-N8N-API-KEY: $API_KEY" \
@@ -177,6 +233,15 @@ create_flowise_credential() {
 # Función para crear credencial HTTP para Qdrant
 create_qdrant_credential() {
     local cred_name="$1"
+    
+    # Verificar si la credencial ya existe
+    local existing_count=$(credential_exists "$cred_name")
+    if [ "$existing_count" -gt 0 ]; then
+        echo -e "${BLUE}  ℹ️  Ya existe: $cred_name (${existing_count} instancia(s))${NC}"
+        echo -e "${BLUE}  ⏭️  Omitiendo creación para evitar duplicados${NC}"
+        return 2  # Código para "ya existe"
+    fi
+    
     local response=$(curl -s -X POST \
         -H "Content-Type: application/json" \
         -H "X-N8N-API-KEY: $API_KEY" \
@@ -185,7 +250,7 @@ create_qdrant_credential() {
             \"type\": \"httpHeaderAuth\",
             \"data\": {
                 \"name\": \"api-key\",
-                \"value\": \"${N8N_QDRANT_API_KEY}\"
+                \"value\": \"${QDRANT_API_KEY}\"
             }
         }" \
         "$N8N_API_BASE/credentials" 2>&1)
@@ -295,7 +360,7 @@ main() {
     echo ""
     echo -e "  ${GREEN}✅ Creadas exitosamente: $created_count${NC}"
     if [ $skipped_count -gt 0 ]; then
-        echo -e "  ${YELLOW}⚠️  Omitidas (no requieren auth): $skipped_count${NC}"
+        echo -e "  ${BLUE}ℹ️  Ya existían (omitidas para evitar duplicados): $skipped_count${NC}"
     fi
     if [ $error_count -gt 0 ]; then
         echo -e "  ${RED}❌ Con errores: $error_count${NC}"
