@@ -272,6 +272,51 @@ services:
           cpus: '0.5'
           memory: 1G
 
+  # Servicio de inicialización automática
+  # Se ejecuta una vez para configurar workflows, credenciales, etc.
+  init-automation:
+    image: curlimages/curl:latest
+    container_name: init-automation
+    volumes:
+      - ./scripts:/scripts:ro
+      - ./n8n/workflows:/workflows:ro
+      - ./config:/config
+      - ./.env:/.env:ro
+    depends_on:
+      n8n:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+    networks:
+      - laboratorio_ai
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        echo "🚀 Iniciando configuración automática..."
+        
+        # Esperar un poco más para asegurar que n8n esté completamente listo
+        sleep 10
+        
+        # Verificar si ya fue inicializado
+        if [ -f "/config/.initialized" ]; then
+          echo "✅ Sistema ya inicializado anteriormente"
+          echo "   Para reinicializar: rm ./config/.initialized"
+          exit 0
+        fi
+        
+        echo "📦 Sistema no inicializado, comenzando configuración..."
+        echo "⚠️  Nota: La configuración completa se debe ejecutar desde el host"
+        echo "   Ejecuta: ./scripts/docker-init-automation.sh"
+        
+        # Crear archivo de marca temporal
+        date > /config/.init-pending
+        
+        echo "✅ Contenedor de inicialización completado"
+        echo "   Ejecuta el script desde el host para completar la configuración"
+    restart: "no"
+
 volumes:
   redis_data:
     driver: local

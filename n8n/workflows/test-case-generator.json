@@ -1,0 +1,150 @@
+{
+  "name": "Test Case Generator",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-tests",
+        "options": {}
+      },
+      "id": "d2e3f4a5-6789-01ab-cdef-4567890abcde",
+      "name": "Webhook - Code Input",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "test-generator-webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/generate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "codellama"
+            },
+            {
+              "name": "prompt",
+              "value": "=Genera tests unitarios completos para el siguiente código:\n\nLenguaje: {{ $json.language }}\nFramework de testing: {{ $json.testFramework || 'Jest' }}\n\nCódigo a testear:\n```\n{{ $json.code }}\n```\n\nGenera:\n1. Tests unitarios completos\n2. Tests de casos edge\n3. Tests de errores\n4. Mocks necesarios\n5. Setup y teardown\n6. Tests de integración si aplica\n7. Cobertura esperada\n8. Comentarios explicativos\n\nAsegúrate de cubrir:\n- Happy path\n- Error handling\n- Boundary conditions\n- Edge cases\n- Null/undefined handling"
+            },
+            {
+              "name": "stream",
+              "value": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e3f4a5b6-7890-12ab-cdef-567890abcdef",
+      "name": "Generate Test Cases",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "ollama-api",
+          "name": "Ollama API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const tests = $input.item.json.response;\nconst inputData = $('Webhook - Code Input').item.json;\n\n// Contar el número de test cases\nconst testCount = (tests.match(/test\\(|it\\(/g) || []).length;\n\n// Detectar tipo de tests\nconst hasUnitTests = tests.toLowerCase().includes('unit test');\nconst hasIntegrationTests = tests.toLowerCase().includes('integration test');\nconst hasE2ETests = tests.toLowerCase().includes('e2e') || tests.toLowerCase().includes('end-to-end');\n\n// Extraer imports y mocks\nconst importsMatch = tests.match(/import[\\s\\S]+?from[\\s\\S]+?;/g);\nconst imports = importsMatch ? importsMatch.join('\\n') : '';\n\nconst hasMocks = tests.includes('jest.mock') || tests.includes('vi.mock') || tests.includes('sinon');\n\nreturn {\n  json: {\n    language: inputData.language,\n    testFramework: inputData.testFramework || 'Jest',\n    testCode: tests,\n    testCount: testCount,\n    hasUnitTests: hasUnitTests,\n    hasIntegrationTests: hasIntegrationTests,\n    hasE2ETests: hasE2ETests,\n    hasMocks: hasMocks,\n    imports: imports,\n    estimatedCoverage: testCount > 10 ? 90 : testCount > 5 ? 75 : 60,\n    timestamp: new Date().toISOString()\n  }\n};"
+      },
+      "id": "f4a5b6c7-8901-23ab-cdef-67890abcdef0",
+      "name": "Analyze Tests",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "generated_tests",
+        "columns": "language, test_framework, test_code, test_count, has_unit_tests, has_integration_tests, has_mocks, estimated_coverage, created_at",
+        "additionalFields": {}
+      },
+      "id": "a5b6c7d8-9012-34ab-cdef-7890abcdef01",
+      "name": "Save Tests",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [850, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-main",
+          "name": "PostgreSQL Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}"
+      },
+      "id": "b6c7d8e9-0123-45ab-cdef-890abcdef012",
+      "name": "Return Tests",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Webhook - Code Input": {
+      "main": [
+        [
+          {
+            "node": "Generate Test Cases",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Test Cases": {
+      "main": [
+        [
+          {
+            "node": "Analyze Tests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Tests": {
+      "main": [
+        [
+          {
+            "node": "Save Tests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Tests": {
+      "main": [
+        [
+          {
+            "node": "Return Tests",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-12T00:00:00.000Z",
+  "versionId": "1"
+}

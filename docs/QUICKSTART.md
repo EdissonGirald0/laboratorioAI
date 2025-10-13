@@ -1,289 +1,238 @@
-# Guía de Inicio Rápido - LaboratorioAI
+# 🚀 INICIO RÁPIDO - Configuración Automática
 
-## ⚡ Despliegue en 5 Minutos
+## ✨ Nuevo: Inicialización Automática al 100%
 
-### Requisitos Previos
-- Docker y Docker Compose instalados
-- 16GB de RAM (recomendado)
-- 50GB de espacio en disco
-- Linux/macOS (Windows con WSL2)
+El sistema ahora se configura automáticamente al iniciar. **No requiere pasos manuales**.
 
-### Paso 1: Clonar el Repositorio
+---
+
+## 📦 Instalación y Primer Inicio
+
+### 1️⃣ Clonar el repositorio
 ```bash
 git clone https://github.com/EdissonGirald0/laboratorioAI.git
 cd laboratorioAI
 ```
 
-### Paso 2: Preparar el Entorno
+### 2️⃣ Inicializar variables de entorno
 ```bash
-# Dar permisos a los scripts
-chmod +x scripts/*.sh
-
-# Crear directorios de datos
-mkdir -p postgres/data qdrant/data ollama/data n8n/data floowise/data openwebui/data redis/data
-
-# Establecer permisos
-chmod -R 777 */data
-```
-
-### Paso 3: Generar Variables de Entorno
-```bash
-# Genera automáticamente todas las credenciales
 ./scripts/init-env.sh
 ```
 
-**⚠️ Importante**: Guarda las credenciales que se muestran en pantalla.
-
-### Paso 4: Validar Configuración
+### 3️⃣ Iniciar el sistema (UN SOLO COMANDO)
 ```bash
-# Verifica que todas las variables estén correctamente configuradas
-./scripts/validate-env.sh
+make start
 ```
 
-### Paso 5: Construir Imagen de Ollama
+Este comando hará **AUTOMÁTICAMENTE**:
+- ✅ Inicia todos los contenedores Docker
+- ✅ Espera a que los servicios estén listos
+- ✅ Descarga el modelo CodeLlama en Ollama
+- ✅ Importa workflows en n8n
+- ✅ Crea credenciales en n8n
+- ✅ Activa workflows
+- ✅ Configura webhooks
+
+**¡Todo listo en ~5 minutos!** ⏱️
+
+---
+
+## 🎯 Comandos Disponibles (Makefile)
+
 ```bash
-# Construye la imagen personalizada de Ollama
-docker compose build ollama
-```
-
-### Paso 6: Desplegar Servicios
-```bash
-# Inicia todos los servicios en segundo plano
-docker compose up -d
-```
-
-**Nota**: La primera vez puede tardar 10-15 minutos descargando imágenes y construyendo contenedores.
-
-### Paso 7: Verificar Despliegue
-```bash
-# Ver estado de los servicios
-docker compose ps
-
-# Ver logs en tiempo real
-docker compose logs -f
+make help          # Ver todos los comandos
+make start         # Iniciar con configuración automática ⭐
+make stop          # Detener servicios
+make restart       # Reiniciar servicios
+make status        # Ver estado de servicios
+make logs          # Ver logs en tiempo real
+make init          # Reconfigurar manualmente
+make reset         # Reinicializar sistema
+make health        # Verificar salud de servicios
+make dev-tools     # Ver herramientas de desarrollo
 ```
 
 ---
 
-## 🎯 Acceso a los Servicios
+## 🌐 URLs de Acceso
 
-Una vez desplegado, los servicios están disponibles en:
+Una vez iniciado el sistema:
 
 | Servicio | URL | Descripción |
 |----------|-----|-------------|
-| **OpenWebUI** | http://localhost:8080 | Interfaz web para chat con modelos de IA |
-| **n8n** | http://localhost:5678 | Automatización de flujos de trabajo |
-| **Floowise** | http://localhost:3000 | Constructor de aplicaciones de IA |
-| **Ollama API** | http://localhost:11434 | API de modelos de lenguaje |
+| **n8n** | http://localhost:5678 | Automatización de workflows |
+| **Flowise** | http://localhost:3000 | Flujos de IA visual |
+| **OpenWebUI** | http://localhost:8080 | Chat con Ollama |
+| **Ollama API** | http://localhost:11434 | API de modelos de IA |
 | **Qdrant** | http://localhost:6333 | Base de datos vectorial |
-| **PostgreSQL** | localhost:5432 | Base de datos relacional |
-| **Redis** | localhost:6379 | Cache y mensajería |
 
-### Credenciales por Defecto
+---
 
-Las credenciales se generaron automáticamente durante `init-env.sh`. Para verlas:
+## 🔧 Webhooks Activos
+
+El sistema incluye 5 webhooks listos para usar:
 
 ```bash
-# Ver archivo de variables de entorno
-cat .env | grep PASSWORD
-cat .env | grep USERNAME
+# Code Review
+curl -X POST http://localhost:5678/webhook/code-review \
+  -H "Content-Type: application/json" \
+  -d '{"code": "tu código", "language": "javascript"}'
+
+# Git Commit Message
+curl -X POST http://localhost:5678/webhook/git-commit \
+  -H "Content-Type: application/json" \
+  -d '{"diff": "git diff output"}'
+
+# Bug Report Analyzer
+curl -X POST http://localhost:5678/webhook/bug-report \
+  -H "Content-Type: application/json" \
+  -d '{"title": "Bug", "description": "Descripción"}'
+
+# API Documentation
+curl -X POST http://localhost:5678/webhook/generate-api-docs \
+  -H "Content-Type: application/json" \
+  -d '{"code": "código de API"}'
+
+# Test Generator
+curl -X POST http://localhost:5678/webhook/generate-tests \
+  -H "Content-Type: application/json" \
+  -d '{"code": "código a testear"}'
 ```
 
 ---
 
-## 🚀 Primeros Pasos
+## 🛠️ Scripts CLI
 
-### 1. Descargar Modelos de IA en Ollama
-
-```bash
-# Modelo general (recomendado para empezar)
-docker compose exec ollama ollama pull mistral
-
-# Modelo para código
-docker compose exec ollama ollama pull codellama
-
-# Modelo para embeddings (búsqueda semántica)
-docker compose exec ollama ollama pull nomic-embed-text
-```
-
-### 2. Acceder a OpenWebUI
-
-1. Abre http://localhost:8080
-2. Crea una cuenta (primera vez)
-3. Selecciona un modelo de Ollama
-4. ¡Comienza a chatear!
-
-### 3. Importar Workflows en n8n
+También puedes usar los scripts de línea de comandos:
 
 ```bash
-# Los workflows están en n8n/workflows/
-# Importarlos desde la interfaz web de n8n
+./scripts/dev-tools/code-review.sh README.md
+./scripts/dev-tools/generate-commit.sh
+./scripts/dev-tools/analyze-bug.sh
+./scripts/dev-tools/generate-tests.sh archivo.js
 ```
-
-Workflows disponibles:
-- `document-processing.json` - Procesamiento de documentos
-- `intelligent-query-system-es.json` - Sistema de consultas inteligentes
-- `sentiment-analysis-pipeline.json` - Análisis de sentimiento
-- `system-health-monitoring.json` - Monitoreo del sistema
-
-### 4. Configurar Floowise
-
-1. Abre http://localhost:3000
-2. Usa las credenciales de `FLOWISE_USERNAME` y `FLOWISE_PASSWORD` del archivo `.env`
-3. Crea tu primer flujo de IA
 
 ---
 
-## 🔧 Comandos Útiles
+## 🔄 Flujo de Inicialización
 
-### Gestión de Servicios
+```
+┌─────────────────────────────────────────────┐
+│  1. make start                              │
+│     └─> docker compose up -d                │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────┐
+│  2. Espera servicios (30s)                  │
+│     ✓ PostgreSQL                            │
+│     ✓ Redis                                 │
+│     ✓ n8n                                   │
+│     ✓ Ollama                                │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────┐
+│  3. ./scripts/post-start.sh                 │
+│     └─> ./scripts/docker-init-automation.sh │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────┐
+│  4. Configuración Automática                │
+│     ✓ Descarga CodeLlama                    │
+│     ✓ Importa 10 workflows                  │
+│     ✓ Crea 5 credenciales                   │
+│     ✓ Activa workflows                      │
+└─────────────────┬───────────────────────────┘
+                  │
+                  ▼
+┌─────────────────────────────────────────────┐
+│  ✅ SISTEMA LISTO                           │
+│     Todos los webhooks activos              │
+└─────────────────────────────────────────────┘
+```
+
+---
+
+## 📝 Notas Importantes
+
+### Primera Vez
+- El primer inicio descargará el modelo **CodeLlama** (~4GB)
+- Tiempo estimado: **5-10 minutos** dependiendo de tu conexión
+- Una vez descargado, inicios posteriores son **instantáneos**
+
+### Marca de Inicialización
+El sistema crea un archivo `./config/.initialized` para evitar reconfiguración:
 
 ```bash
-# Ver estado
-docker compose ps
+# Ver si ya fue inicializado
+cat ./config/.initialized
+
+# Forzar reinicialización
+rm ./config/.initialized
+make init
+```
+
+### Sin Inicialización Automática
+Si prefieres configurar manualmente:
+
+```bash
+make start-no-init    # Inicia servicios sin configurar
+# ... configuración manual ...
+make init             # Configura cuando estés listo
+```
+
+---
+
+## 🆘 Solución de Problemas
+
+### El sistema no se inicia
+```bash
+# Verificar estado
+make status
 
 # Ver logs
-docker compose logs -f [servicio]
+make logs
 
-# Reiniciar un servicio
-docker compose restart [servicio]
-
-# Reiniciar todos los servicios
-docker compose restart
-
-# Detener servicios
-docker compose stop
-
-# Iniciar servicios detenidos
-docker compose start
-
-# Eliminar todo (sin borrar datos)
-docker compose down
-
-# Eliminar todo (incluyendo datos)
-docker compose down -v
+# Verificar salud
+make health
 ```
 
-### Mantenimiento
-
+### Workflows no importados
 ```bash
-# Backup de datos
-./scripts/backup-data.sh
-
-# Restaurar desde backup
-./scripts/restore-data.sh ./backups/backup_YYYYMMDD_HHMMSS
-
-# Limpiar logs antiguos
-./scripts/cleanup.sh
-
-# Monitorear servicios
-./scripts/monitor-services.sh
+# Reinicializar
+make reset
+make init
 ```
 
-### Diagnóstico
-
+### Servicios caídos
 ```bash
-# Verificar salud de servicios
-docker compose ps | grep healthy
-
-# Ver uso de recursos
-docker stats
-
-# Ver espacio en disco
-du -sh */data
-
-# Logs de un servicio específico
-docker compose logs --tail=100 postgres
+# Reiniciar todo
+make restart
 ```
 
----
-
-## ❓ Solución de Problemas
-
-### Servicio no se inicia
-
+### Limpiar y empezar de cero
 ```bash
-# Ver logs del servicio
-docker compose logs [nombre_servicio]
-
-# Verificar que el puerto no esté en uso
-sudo netstat -tlnp | grep [puerto]
-
-# Reiniciar el servicio
-docker compose restart [nombre_servicio]
+# ⚠️ PELIGRO: Borra todos los datos
+make clean
+make start
 ```
-
-### Error de conexión entre servicios
-
-```bash
-# Verificar que estén en la misma red
-docker network inspect laboratorio_ai
-
-# Probar conectividad
-docker compose exec n8n ping postgres
-```
-
-### Falta de espacio en disco
-
-```bash
-# Ver espacio usado
-df -h
-du -sh */data
-
-# Limpiar imágenes no utilizadas
-docker system prune -a
-
-# Limpiar todo (cuidado!)
-docker system prune -a --volumes
-```
-
-### Modelos de Ollama no disponibles
-
-```bash
-# Listar modelos descargados
-docker compose exec ollama ollama list
-
-# Descargar modelos necesarios
-docker compose exec ollama ollama pull [nombre_modelo]
-```
-
-Para más detalles, consulta [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md)
 
 ---
 
 ## 📚 Documentación Adicional
 
-- [CHANGELOG.md](CHANGELOG.md) - Historial de cambios
-- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Guía completa de solución de problemas
-- [docs/OLLAMA.md](docs/OLLAMA.md) - Documentación de Ollama
-- [docs/FLOOWISE.md](docs/FLOOWISE.md) - Documentación de Floowise
-- [docs/INTEGRACIONES.md](docs/INTEGRACIONES.md) - Guía de integraciones
-- [.github/copilot-instructions.md](.github/copilot-instructions.md) - Instrucciones para agentes de IA
+- **Guía Completa**: [README.md](../README.md)
+- **Troubleshooting**: [docs/TROUBLESHOOTING.md](../docs/TROUBLESHOOTING.md)
+- **n8n Workflows**: [docs/N8N_WORKFLOWS.md](../docs/N8N_WORKFLOWS.md)
+- **Ollama**: [docs/OLLAMA.md](../docs/OLLAMA.md)
+- **Flowise**: [docs/FLOWISE.md](../docs/FLOWISE.md)
 
 ---
 
-## 🤝 Contribuir
+**🎉 ¡Todo configurado automáticamente con un solo comando!**
 
-¿Encontraste un bug? ¿Tienes una sugerencia?
-
-1. Fork el repositorio
-2. Crea una rama: `git checkout -b feature/MiCaracteristica`
-3. Commit tus cambios: `git commit -m 'Agrego nueva característica'`
-4. Push a la rama: `git push origin feature/MiCaracteristica`
-5. Abre un Pull Request
-
----
-
-## 📄 Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver [LICENSE](LICENSE) para más detalles.
-
----
-
-## 👥 Autor
-
-**Edisson Giraldo** - [@EdissonGirald0](https://github.com/EdissonGirald0)
-
----
-
-## ⭐ Si te gusta este proyecto, dale una estrella en GitHub!
+```bash
+make start
+```

@@ -1,0 +1,178 @@
+{
+  "name": "Code Review Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "code-review",
+        "options": {}
+      },
+      "id": "d0c3f5a8-1234-4567-89ab-cdef01234567",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "code-review-webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:11434/generate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "model",
+              "value": "codellama"
+            },
+            {
+              "name": "prompt",
+              "value": "=Analiza el siguiente código y proporciona una revisión detallada:\n\nLenguaje: {{ $json.language }}\n\nCódigo:\n```\n{{ $json.code }}\n```\n\nPor favor revisa:\n1. Calidad del código y buenas prácticas\n2. Posibles bugs o errores\n3. Optimizaciones sugeridas\n4. Seguridad\n5. Documentación necesaria\n6. Tests recomendados"
+            },
+            {
+              "name": "stream",
+              "value": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+      "name": "Ollama Code Review",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300],
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "ollama-api",
+          "name": "Ollama API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "review-id",
+              "name": "review",
+              "value": "={{ $json.response }}",
+              "type": "string"
+            },
+            {
+              "id": "timestamp-id",
+              "name": "timestamp",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "language-id",
+              "name": "language",
+              "value": "={{ $('Webhook Trigger').item.json.language }}",
+              "type": "string"
+            },
+            {
+              "id": "severity-id",
+              "name": "severity",
+              "value": "={{ $json.response.includes('crítico') || $json.response.includes('critical') ? 'high' : $json.response.includes('importante') || $json.response.includes('important') ? 'medium' : 'low' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b2c3d4e5-6789-01ab-cdef-234567890abc",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": {
+        "operation": "insert",
+        "schema": "public",
+        "table": "code_reviews",
+        "columns": "language, review, severity, created_at",
+        "additionalFields": {}
+      },
+      "id": "c3d4e5f6-7890-12ab-cdef-34567890abcd",
+      "name": "Save to PostgreSQL",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.2,
+      "position": [850, 300],
+      "credentials": {
+        "postgres": {
+          "id": "postgres-main",
+          "name": "PostgreSQL Main"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"status\": \"success\", \"review\": $json.review, \"severity\": $json.severity, \"timestamp\": $json.timestamp } }}"
+      },
+      "id": "d4e5f6a7-8901-23ab-cdef-4567890abcde",
+      "name": "Return Review",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [1050, 300]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Ollama Code Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ollama Code Review": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Save to PostgreSQL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save to PostgreSQL": {
+      "main": [
+        [
+          {
+            "node": "Return Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [],
+  "triggerCount": 0,
+  "updatedAt": "2025-10-12T00:00:00.000Z",
+  "versionId": "1"
+}
