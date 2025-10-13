@@ -32,6 +32,7 @@ Esta carpeta contiene toda la documentación del proyecto LaboratorioAI, organiz
 | **[PREVENCION_DUPLICADOS.md](./PREVENCION_DUPLICADOS.md)** | 🔄 Sistema de prevención de duplicados en workflows/credenciales |
 | **[RESUMEN_IMPLEMENTACION_DUPLICADOS.md](./RESUMEN_IMPLEMENTACION_DUPLICADOS.md)** | 📊 Resumen completo de la implementación anti-duplicados |
 | **[WEBHOOK_CONFLICT_RESOLUTION.md](./WEBHOOK_CONFLICT_RESOLUTION.md)** | 🔧 Resolución de conflictos de webhooks |
+| **[REPORTE_PRUEBAS_AUTOMATIZACION.md](./REPORTE_PRUEBAS_AUTOMATIZACION.md)** | ✅ Reporte completo de pruebas de automatización |
 
 ### 🔐 Configuración y Credenciales
 
