@@ -128,9 +128,11 @@ Workflows incluidos: chatbot con memoria, procesamiento de documentos, sistema d
 
 ## Documentacion
 
+- [ARQUITECTURA.md](docs/ARQUITECTURA.md) - Diagramas Mermaid del sistema
 - [QUICKSTART.md](docs/QUICKSTART.md) - Guia rapida
 - [PROJECT_STRUCTURE.md](docs/PROJECT_STRUCTURE.md) - Estructura detallada
 - [TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) - Solucion de problemas
+- [INTEGRACIONES.md](docs/INTEGRACIONES.md) - Conexiones entre servicios
 - [docs/](docs/) - Documentacion completa
 
 ## Licencia

@@ -9,7 +9,7 @@ services:
   redis:
     image: redis:alpine
     container_name: redis
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory 256mb --maxmemory-policy allkeys-lru
     ports:
       - "6380:6379"
     volumes:
@@ -27,11 +27,12 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 1G
-        reservations:
-          cpus: '0.25'
+          cpus: '0.5'
           memory: 256M
+          pids: 100
+        reservations:
+          cpus: '0.1'
+          memory: 64M
 
   postgres:
     image: postgres:16-alpine
@@ -45,7 +46,12 @@ services:
       - POSTGRES_NON_ROOT_PASSWORD
     command: >
       sh -c "
-        docker-entrypoint.sh postgres &
+        docker-entrypoint.sh postgres
+        -c shared_buffers=128MB
+        -c effective_cache_size=384MB
+        -c work_mem=8MB
+        -c maintenance_work_mem=64MB
+        -c max_connections=30 &
         POSTGRES_PID=\$!;
         until pg_isready -q -U $${POSTGRES_USER} -d $${POSTGRES_DB}; do sleep 2; done;
         echo 'Verificando n8n_db...';
@@ -69,6 +75,15 @@ services:
       - laboratorio_ai
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+          pids: 200
+        reservations:
+          cpus: '0.25'
+          memory: 128M
 
   qdrant:
     image: qdrant/qdrant:latest
@@ -87,6 +102,16 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
+          pids: 100
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
@@ -101,6 +126,16 @@ services:
       - "host.docker.internal:host-gateway"
     pull_policy: always
 
+    deploy:
+      resources:
+        limits:
+          cpus: '4.0'
+          memory: 8G
+          pids: 200
+        reservations:
+          cpus: '0.5'
+          memory: 512M
+
   openwebui:
     image: ghcr.io/open-webui/open-webui:latest
     container_name: openwebui
@@ -112,6 +147,7 @@ services:
       - OLLAMA_API_BASE_URL=http://host.docker.internal:11434/api
       - OLLAMA_HOST=host.docker.internal
       - OLLAMA_PORT=11434
+      - WEBUI_NAME=LaboratorioAI
     ports:
       - "8080:8080"
     volumes:
@@ -124,12 +160,25 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 2G
+          pids: 200
+        reservations:
+          cpus: '0.25'
+          memory: 256M
+
   n8n:
     image: docker.n8n.io/n8nio/n8n:latest
     restart: always
     ports:
       - "5678:5678"
     environment:
+      # Node.js memory limit
+      - NODE_OPTIONS=--max-old-space-size=768
+      
       # Configuración básica
       - N8N_HOST=${N8N_HOST:-localhost}
       - N8N_PORT=${N8N_PORT:-5678}
@@ -205,16 +254,19 @@ services:
       interval: 30s
       timeout: 10s
       retries: 3
+      start_period: 30s
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: 2G
-        reservations:
-          cpus: '0.5'
+          cpus: '1.0'
           memory: 1G
+          pids: 200
+        reservations:
+          cpus: '0.25'
+          memory: 512M
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
 
   floowise:
     build: ./floowise
@@ -222,6 +274,7 @@ services:
     env_file:
       - .env
     environment:
+      - NODE_OPTIONS=--max-old-space-size=768
       - PORT=3000
       - HOST=0.0.0.0
       - FLOWISE_USERNAME=${FLOWISE_USERNAME}
@@ -239,7 +292,7 @@ services:
       - OLLAMA_API_BASE_URL=http://ollama:11434
       - QDRANT_URL=http://qdrant:6333
       - EXECUTION_MODE=main
-      - DEBUG=true
+      - DEBUG=false
       - LOG_LEVEL=info
       - TOOL_FUNCTION_BUILTIN_DEP=crypto,fs,path
       - TOOL_FUNCTION_EXTERNAL_DEP=axios,moment
@@ -271,14 +324,16 @@ services:
       start_period: 20s
     extra_hosts:
       - "host.docker.internal:host-gateway"
+
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: 4G
-        reservations:
-          cpus: '0.5'
+          cpus: '1.0'
           memory: 1G
+          pids: 300
+        reservations:
+          cpus: '0.25'
+          memory: 512M
 
 volumes:
   redis_data:

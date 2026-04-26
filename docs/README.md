@@ -4,6 +4,7 @@
 
 | Archivo | Descripcion |
 |---------|-------------|
+| [ARQUITECTURA.md](./ARQUITECTURA.md) | Diagramas Mermaid: arquitectura, flujos, BD, red |
 | [QUICKSTART.md](./QUICKSTART.md) | Guia rapida de inicio |
 | [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md) | Estructura del proyecto |
 | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Solucion de problemas |

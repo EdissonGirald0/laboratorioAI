@@ -70,6 +70,8 @@ make init    # full setup
 - **OpenWebUI**: web UI for Ollama
 
 ## Docs
+- `docs/ARQUITECTURA.md` - Mermaid diagrams (architecture, flows, DB, network)
 - `docs/QUICKSTART.md`
 - `docs/PROJECT_STRUCTURE.md`
 - `docs/TROUBLESHOOTING.md`
+- `docs/INTEGRACIONES.md`
