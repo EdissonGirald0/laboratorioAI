@@ -5,20 +5,13 @@ networks:
     driver: bridge
 
 services:
-  dev:
-    image: mcr.microsoft.com/vscode/devcontainers/universal:latest
-    volumes:
-      - ..:/workspace:cached
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: sleep infinity
-    network_mode: service:redis
 
   redis:
     image: redis:alpine
     container_name: redis
     command: redis-server --requirepass ${REDIS_PASSWORD}
     ports:
-      - "6379:6379"
+      - "6380:6379"
     volumes:
       - redis_data:/data
     networks:
@@ -41,17 +34,32 @@ services:
           memory: 256M
 
   postgres:
-    image: postgres:latest
+    image: postgres:16-alpine
     restart: always
+    container_name: laboratorioai-postgres
     environment:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
       - POSTGRES_DB
       - POSTGRES_NON_ROOT_USER
       - POSTGRES_NON_ROOT_PASSWORD
+    command: >
+      sh -c "
+        docker-entrypoint.sh postgres &
+        POSTGRES_PID=\$!;
+        until pg_isready -q -U $${POSTGRES_USER} -d $${POSTGRES_DB}; do sleep 2; done;
+        echo 'Verificando n8n_db...';
+        if ! psql -U $${POSTGRES_USER} -d $${POSTGRES_DB} -tAc \"SELECT 1 FROM pg_database WHERE datname='n8n_db'\" | grep -q 1; then
+          echo 'Creando n8n_db...';
+          psql -U $${POSTGRES_USER} -d $${POSTGRES_DB} -c 'CREATE DATABASE n8n_db;';
+        else
+          echo 'n8n_db ya existe';
+        fi;
+        wait \$$POSTGRES_PID
+      "
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./init-data.sh:/docker-entrypoint-initdb.d/init-data.sh
+      - postgres_data:/var/lib/postgresql
+      - ./postgres/init-scripts:/docker-entrypoint-initdb.d
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}']
       interval: 5s
@@ -100,10 +108,10 @@ services:
       - .env
     environment:
       - DATABASE_URL=sqlite:////app/data/openwebui.db
+      - REDIS_URL=redis://redis:6379/0?password=${REDIS_PASSWORD}
       - OLLAMA_API_BASE_URL=http://host.docker.internal:11434/api
       - OLLAMA_HOST=host.docker.internal
       - OLLAMA_PORT=11434
-      - REDIS_URL=redis://host.docker.internal:6379/0?password=${REDIS_PASSWORD}
     ports:
       - "8080:8080"
     volumes:
@@ -272,91 +280,11 @@ services:
           cpus: '0.5'
           memory: 1G
 
-  # Servicio de inicialización automática
-  # Se ejecuta una vez para configurar workflows, credenciales, etc.
-  init-automation:
-    image: curlimages/curl:latest
-    container_name: init-automation
-    volumes:
-      - ./scripts:/scripts:ro
-      - ./n8n/workflows:/workflows:ro
-      - ./config:/config
-      - ./.env:/.env:ro
-    depends_on:
-      n8n:
-        condition: service_healthy
-      ollama:
-        condition: service_started
-    networks:
-      - laboratorio_ai
-    extra_hosts:
-      - "host.docker.internal:host-gateway"
-    entrypoint: ["/bin/sh", "-c"]
-    command:
-      - |
-        echo "🚀 Iniciando configuración automática..."
-        
-        # Esperar un poco más para asegurar que n8n esté completamente listo
-        sleep 10
-        
-        # Verificar si ya fue inicializado
-        if [ -f "/config/.initialized" ]; then
-          echo "✅ Sistema ya inicializado anteriormente"
-          echo "   Para reinicializar: rm ./config/.initialized"
-          exit 0
-        fi
-        
-        echo "📦 Sistema no inicializado, comenzando configuración..."
-        echo "⚠️  Nota: La configuración completa se debe ejecutar desde el host"
-        echo "   Ejecuta: ./scripts/docker-init-automation.sh"
-        
-        # Crear archivo de marca temporal
-        date > /config/.init-pending
-        
-        echo "✅ Contenedor de inicialización completado"
-        echo "   Ejecuta el script desde el host para completar la configuración"
-    restart: "no"
-
 volumes:
   redis_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/redis/data
   postgres_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/postgres/data
   qdrant_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/qdrant/data
   ollama_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/ollama/data
   n8n_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/n8n/data
   floowise_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/floowise/data
   openwebui_data:
-    driver: local
-    driver_opts:
-      type: none
-      o: bind
-      device: ${PWD}/openwebui/data

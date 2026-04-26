@@ -1,42 +1,26 @@
 #!/bin/bash
 set -e
 
-# Script de inicialización de PostgreSQL
-echo "Iniciando configuración de PostgreSQL..."
+echo "=== LaboratorioAI - Init PostgreSQL ==="
 
-# Crear el usuario aiadmin con la contraseña de la variable de entorno
-psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
-    -- Crear extensiones necesarias
+# Crear base de datos n8n_db
+echo "Creando n8n_db..."
+psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "CREATE DATABASE n8n_db;" 2>/dev/null || echo "  n8n_db ya existe"
+
+# Extensiones y usuario
+psql -v ON_ERROR_STOP=1 -U "$POSTGRES_USER" -d "$POSTGRES_DB" <<-EOSQL
     CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
     CREATE EXTENSION IF NOT EXISTS "pgcrypto";
-
-    -- Crear usuario para aplicaciones
     CREATE USER ${POSTGRES_NON_ROOT_USER} WITH PASSWORD '${POSTGRES_NON_ROOT_PASSWORD}';
-
-    -- Asignar propietario de la base de datos
     ALTER DATABASE ${POSTGRES_DB} OWNER TO ${POSTGRES_NON_ROOT_USER};
-
-    -- Crear esquemas
     CREATE SCHEMA IF NOT EXISTS n8n;
-    ALTER SCHEMA n8n OWNER TO ${POSTGRES_NON_ROOT_USER};
-
     CREATE SCHEMA IF NOT EXISTS floowise;
-    ALTER SCHEMA floowise OWNER TO ${POSTGRES_NON_ROOT_USER};
-
-    -- Asignar permisos amplios
     GRANT ALL PRIVILEGES ON DATABASE ${POSTGRES_DB} TO ${POSTGRES_NON_ROOT_USER};
+    GRANT ALL PRIVILEGES ON DATABASE n8n_db TO ${POSTGRES_NON_ROOT_USER};
     GRANT ALL PRIVILEGES ON SCHEMA n8n TO ${POSTGRES_NON_ROOT_USER};
     GRANT ALL PRIVILEGES ON SCHEMA floowise TO ${POSTGRES_NON_ROOT_USER};
     GRANT ALL PRIVILEGES ON SCHEMA public TO ${POSTGRES_NON_ROOT_USER};
     GRANT CREATE ON DATABASE ${POSTGRES_DB} TO ${POSTGRES_NON_ROOT_USER};
-
-    -- Permisos adicionales para tablas futuras
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO ${POSTGRES_NON_ROOT_USER};
-    ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO ${POSTGRES_NON_ROOT_USER};
-    ALTER DEFAULT PRIVILEGES IN SCHEMA n8n GRANT ALL ON TABLES TO ${POSTGRES_NON_ROOT_USER};
-    ALTER DEFAULT PRIVILEGES IN SCHEMA n8n GRANT ALL ON SEQUENCES TO ${POSTGRES_NON_ROOT_USER};
-    ALTER DEFAULT PRIVILEGES IN SCHEMA floowise GRANT ALL ON TABLES TO ${POSTGRES_NON_ROOT_USER};
-    ALTER DEFAULT PRIVILEGES IN SCHEMA floowise GRANT ALL ON SEQUENCES TO ${POSTGRES_NON_ROOT_USER};
 EOSQL
 
-echo "Configuración de PostgreSQL completada exitosamente."
+echo "=== Init completado ==="

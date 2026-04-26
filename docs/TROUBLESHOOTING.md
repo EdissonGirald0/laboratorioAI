@@ -1,308 +1,119 @@
-# Guía de Solución de Problemas - LaboratorioAI
+# Solucion de Problemas - LaboratorioAI
 
-## Errores Comunes y Soluciones
+## Errores Comunes
 
-### 1. Error: "docker-compose: orden no encontrada"
+### 1. Puerto en uso (6379 o 5432)
 
-**Problema**: El comando `docker-compose` no está disponible.
+**Problema**: Redis o PostgreSQL no inician porque otros contenedores usan esos puertos.
 
-**Solución**:
+**Solucion**:
 ```bash
-# En sistemas modernos, usar 'docker compose' (sin guión)
-docker compose up -d
+# Ver que ocupa el puerto
+sudo lsof -i :6379
+sudo lsof -i :5432
 
-# O instalar docker-compose
-sudo apt-get update
-sudo apt-get install docker-compose-plugin
+# Redis del proyecto usa puerto 6380 en el host
+# Si aun hay conflicto, cambia el puerto en docker-compose.yml:
+#   ports:
+#     - "6381:6379"
 ```
 
----
+### 2. Postgres no arranca (version incompatible)
 
-### 2. Error: "mapping key 'networks' already defined"
+**Problema**: Datos de una version anterior de PostgreSQL son incompatibles.
 
-**Problema**: Clave duplicada en docker-compose.yml.
-
-**Solución**: Este error ya fue corregido en la versión actual. Si persiste:
+**Solucion**:
 ```bash
-# Restaurar desde backup
-cp docker-compose.yml.backup docker-compose.yml
-
-# O usar git para obtener la versión corregida
-git pull origin main
-```
-
----
-
-### 3. Error: "volumes additional properties not allowed"
-
-**Problema**: La sección `volumes` está mal ubicada en docker-compose.yml.
-
-**Solución**: La sección `volumes` debe estar al mismo nivel que `services` y `networks`, no dentro de `services`. Ya corregido en la versión actual.
-
----
-
-### 4. Error: "unexpected character in variable name"
-
-**Problema**: JSON multilínea en archivo `.env`.
-
-**Solución**:
-```bash
-# Regenerar el archivo .env
-./scripts/init-env.sh
-
-# El script ahora genera JSON en una sola línea
-```
-
----
-
-### 5. Error: "dockerfile parse error: unknown instruction"
-
-**Problema**: Falta el carácter de continuación `\` en comandos multilínea del Dockerfile.
-
-**Solución**: Ya corregido en `floowise/Dockerfile`. Ejemplo del formato correcto:
-```dockerfile
-RUN apk add --no-cache \
-    python3 \
-    py3-pip \
-    build-base
-```
-
----
-
-### 6. Error: "pull access denied for localaidocker-ollama"
-
-**Problema**: La imagen de Ollama no existe en Docker Hub, debe construirse localmente.
-
-**Solución**:
-```bash
-# Construir la imagen antes del despliegue
-docker compose build ollama
-
-# O durante el despliegue
-docker compose up -d --build
-```
-
----
-
-### 7. Faltan Variables de Entorno
-
-**Problema**: Warnings sobre variables no definidas al ejecutar docker compose.
-
-**Solución**:
-```bash
-# Regenerar archivo .env con todas las variables
-./scripts/init-env.sh
-
-# Validar que todas estén presentes
-./scripts/validate-env.sh
-```
-
-Variables que se generan automáticamente:
-- REDIS_PASSWORD, REDIS_URL
-- N8N_BASIC_AUTH_USER, N8N_BASIC_AUTH_PASSWORD
-- DB_POSTGRESDB_* (5 variables)
-- SMTP_* (4 variables)
-- FLOWISE_API_KEY, FLOWISE_USERNAME, FLOWISE_PASSWORD
-- CREDENTIAL_JSON
-
----
-
-### 8. Problemas de Permisos en Directorios
-
-**Problema**: Los contenedores no pueden escribir en los volúmenes.
-
-**Solución**:
-```bash
-# Crear directorios con permisos correctos
-mkdir -p postgres/data qdrant/data ollama/data n8n/data floowise/data openwebui/data redis/data
-
-# Establecer permisos
-chmod -R 777 */data
-
-# O ajustar ownership
-sudo chown -R 1000:1000 */data
-```
-
----
-
-### 9. Servicios No se Inician
-
-**Problema**: Contenedores se detienen inmediatamente después de iniciar.
-
-**Diagnóstico**:
-```bash
-# Ver logs de un servicio específico
-docker compose logs <nombre_servicio>
-
-# Ver logs de todos los servicios
-docker compose logs
-
-# Ver estado de los contenedores
-docker compose ps -a
-```
-
-**Soluciones comunes**:
-- Verificar que el archivo `.env` exista y sea válido
-- Verificar que los puertos no estén en uso
-- Revisar logs para errores específicos
-
----
-
-### 10. Error de Conexión entre Servicios
-
-**Problema**: Los servicios no pueden comunicarse entre sí.
-
-**Verificación**:
-```bash
-# Verificar que todos estén en la misma red
-docker network inspect laboratorio_ai
-
-# Verificar conectividad desde un contenedor
-docker compose exec n8n ping postgres
-docker compose exec floowise ping ollama
-```
-
-**Solución**:
-- Asegúrate de usar `host.docker.internal` para referencias entre servicios
-- Verifica que todos los servicios estén en la red `laboratorio_ai`
-- Reinicia los servicios: `docker compose restart`
-
----
-
-### 11. Base de Datos No Se Inicializa
-
-**Problema**: PostgreSQL no crea las bases de datos o usuarios.
-
-**Solución**:
-```bash
-# Eliminar volúmenes y empezar de cero
 docker compose down -v
-
-# Verificar que el script de inicialización existe
-ls -l postgres/init-scripts/
-
-# Volver a desplegar
-docker compose up -d postgres
-
-# Verificar logs de PostgreSQL
-docker compose logs postgres
+rm -rf postgres/data/*
+docker compose up -d
 ```
 
----
+> La BD se recrea automaticamente con los init-scripts.
 
-### 12. Modelos de Ollama No Disponibles
+### 3. n8n no inicia: "database n8n_db does not exist"
 
-**Problema**: Ollama no tiene modelos descargados.
+**Problema**: La base de datos `n8n_db` no se creo.
 
-**Solución**:
+**Solucion**: Se resuelve automaticamente. Reinicia postgres:
 ```bash
-# Listar modelos disponibles
-docker compose exec ollama ollama list
-
-# Descargar modelos necesarios
-docker compose exec ollama ollama pull mistral
-docker compose exec ollama ollama pull codellama
-docker compose exec ollama ollama pull nomic-embed-text
+docker compose restart postgres
 ```
 
----
+El comando de inicio verifica y crea `n8n_db` si no existe.
 
-## Comandos Útiles de Diagnóstico
+### 4. Servicios no responden
 
-### Ver Estado General
+**Verificacion**:
 ```bash
-# Estado de todos los servicios
+# Estado de contenedores
 docker compose ps
 
-# Recursos utilizados
-docker stats
-
-# Espacio en disco
-df -h
-du -sh */data
+# Logs
+docker compose logs <servicio>
 ```
 
-### Logs y Debugging
+### 5. OpenWebUI error de Redis
+
+**Problema**: OpenWebUI no puede autenticarse con Redis.
+
+**Solucion**: Ya corregido en la configuracion actual. OpenWebUI usa la red interna Docker (`redis://redis:6379`). Si persiste:
 ```bash
+docker compose up -d openwebui
+```
+
+### 6. Permisos en directorios de datos
+
+```bash
+mkdir -p postgres/data qdrant/data ollama/data n8n/data floowise/data openwebui/data redis/data
+chmod -R 777 */data
+```
+
+## Diagnostico
+
+```bash
+# Estado general
+docker compose ps
+
 # Logs en tiempo real
 docker compose logs -f
 
-# Logs de un servicio específico
+# Logs de un servicio
 docker compose logs -f n8n
 
-# Últimas 100 líneas de logs
-docker compose logs --tail=100
+# Recursos
+docker stats
 ```
 
-### Reiniciar Servicios
+## Reinicio Completo
+
 ```bash
-# Reiniciar todos los servicios
-docker compose restart
-
-# Reiniciar un servicio específico
-docker compose restart postgres
-
-# Reinicio completo (elimina contenedores pero no volúmenes)
+# Sin borrar datos
 docker compose down
+docker compose up -d
+
+# Borrando todo (empezar de cero)
+docker compose down -v
+rm -rf */data/*
 docker compose up -d
 ```
 
-### Limpieza Completa
-```bash
-# Detener y eliminar todo (incluyendo volúmenes)
-docker compose down -v
-
-# Limpiar imágenes no utilizadas
-docker system prune -a
-
-# Limpiar todo el sistema Docker
-docker system prune -a --volumes
-```
-
----
-
-## Verificación Post-Despliegue
-
-Una vez desplegado, verifica que todo funcione:
+## Verificacion
 
 ```bash
-# 1. Todos los servicios deben estar 'Up'
-docker compose ps
+# Health checks
+curl http://localhost:5678/healthz  # n8n
+curl http://localhost:3000          # Flowise
+curl http://localhost:8080          # OpenWebUI
+curl http://localhost:11434         # Ollama
+curl http://localhost:6333          # Qdrant
 
-# 2. Verificar healthchecks
-docker compose ps | grep healthy
-
-# 3. Verificar conectividad de servicios
-curl http://localhost:11434/api/version  # Ollama
-curl http://localhost:6333/health        # Qdrant
-curl http://localhost:8080              # OpenWebUI
-curl http://localhost:5678              # n8n
-curl http://localhost:3000              # Floowise
-
-# 4. Verificar PostgreSQL
-docker compose exec postgres psql -U aiadmin -d ailab -c "SELECT version();"
+# Bases de datos
+make status
 ```
-
----
-
-## Recursos Adicionales
-
-- **Docker Compose Docs**: https://docs.docker.com/compose/
-- **Ollama Docs**: https://ollama.ai/docs
-- **n8n Docs**: https://docs.n8n.io/
-- **Flowise Docs**: https://docs.flowiseai.com/
-
----
 
 ## Soporte
 
-Si encuentras un problema no documentado aquí:
-
-1. Revisa los logs detalladamente: `docker compose logs`
-2. Verifica el archivo `.env` con: `./scripts/validate-env.sh`
-3. Consulta el CHANGELOG.md para cambios recientes
-4. Abre un issue en GitHub con:
-   - Descripción del problema
-   - Logs relevantes
-   - Comando que causa el error
-   - Versión de Docker y Docker Compose
+- Revisa logs: `docker compose logs`
+- Valida .env: `./scripts/validate-env.sh`
+- Abre issue en GitHub con logs y descripcion del error

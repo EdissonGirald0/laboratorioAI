@@ -1,173 +1,92 @@
-# 📁 Estructura del Proyecto
+# Estructura del Proyecto
 
 ```
 laboratorioAI/
+├── docker-compose.yml         # Orquestacion (7 servicios)
+├── .env                       # Variables de entorno (generado, no commit)
+├── Makefile                   # Atajos de comandos
+├── AGENTS.md                  # Instrucciones para agentes AI
+├── CHANGELOG.md               # Historial de cambios
+├── README.md                  # Documentacion principal
 │
-├── 📄 docker-compose.yml          # Orquestación de 7 servicios
-├── 📄 .env                         # Variables de entorno (generado)
-├── 📄 .gitignore                   # Archivos ignorados por Git
-├── 📄 LICENSE                      # Licencia MIT
+├── scripts/                   # Scripts de automatizacion
+│   ├── init-env.sh            # Genera .env con claves aleatorias
+│   ├── verify-system.sh       # Verifica salud de servicios
+│   ├── backup-data.sh         # Backup de datos
+│   ├── restore-data.sh        # Restaurar datos
+│   ├── auto-import-n8n-workflows.sh    # Importa workflows n8n
+│   ├── auto-import-n8n-credentials.sh  # Importa credenciales n8n
+│   ├── docker-init-automation.sh       # Configuracion automatica
+│   ├── setup-codespace.sh     # Setup para GitHub Codespaces
+│   ├── test-lab.sh            # Tests de integracion
+│   └── dev-tools/             # Herramientas CLI de desarrollo
 │
-├── 📚 Documentación Principal
-│   ├── README.md                   # Guía completa del proyecto
-│   ├── PROJECT_SUMMARY.md          # Resumen ejecutivo
-│   ├── AUTOMATION_SUCCESS.md       # Logros de automatización
-│   ├── CREDENTIALS.md              # Credenciales del sistema
-│   ├── DEPLOYMENT_SUCCESS.md       # Estado del despliegue
-│   └── CHANGELOG.md                # Historial de cambios
+├── postgres/                  # PostgreSQL
+│   └── init-scripts/          # Scripts de inicializacion (primer deploy)
+│       └── 00-init-users.sh   # Crea BD, usuarios, extensiones
 │
-├── 📂 docs/                        # Documentación detallada
-│   ├── COMPLETE_AUTOMATION.md      # Guía de automatización completa
-│   ├── N8N_API_SETUP.md            # Configuración de API Key
-│   ├── WORKFLOW_IMPORT_SUCCESS.md  # Detalles de workflows
-│   ├── TROUBLESHOOTING.md          # Solución de problemas
-│   ├── CONTRIBUTING.md             # Guía de contribución
-│   ├── OLLAMA.md                   # Documentación de Ollama
-│   ├── FLOOWISE.md                 # Documentación de Flowise
-│   ├── INTEGRACIONES.md            # Integraciones entre servicios
-│   └── imagenes/                   # Diagramas y capturas
-│       ├── laboratorio_ai_network.png
-│       ├── ai_document_workflow.png
-│       └── document_query_pipeline.png
+├── n8n/                       # n8n
+│   ├── workflows/             # Workflows JSON (8 flujos)
+│   ├── credentials/           # Credenciales pre-configuradas
+│   └── custom/                # Codigo TypeScript personalizado
 │
-├── 🤖 scripts/                     # Scripts de automatización
-│   ├── 🚀 Automatización
-│   │   ├── setup-n8n-complete.sh           # Setup completo (maestro)
-│   │   ├── auto-import-n8n-workflows.sh    # Importar workflows
-│   │   └── auto-import-n8n-credentials.sh  # Crear credenciales
-│   │
-│   ├── 🔧 Mantenimiento
-│   │   ├── init-env.sh                     # Inicializar variables
-│   │   ├── validate-env.sh                 # Validar configuración
-│   │   ├── backup-data.sh                  # Backup de datos
-│   │   ├── restore-data.sh                 # Restaurar backup
-│   │   └── cleanup.sh                      # Limpieza de logs
-│   │
-│   └── 🧪 Testing
-│       ├── test-lab.sh                     # Test del sistema
-│       ├── test-n8n-automations.sh         # Test de n8n
-│       └── monitor-services.sh             # Monitoreo de servicios
+├── floowise/                  # Flowise
+│   ├── Dockerfile             # Imagen personalizada
+│   ├── config.json            # Configuracion
+│   └── components/            # Componentes personalizados
 │
-├── 🔄 n8n/                         # Configuración de n8n
-│   ├── workflows/                  # Workflows pre-configurados
-│   │   ├── chatbot.json                    # AI Chatbot con memoria
-│   │   ├── document-processing.json        # Procesamiento de docs
-│   │   ├── document-processing-automation.json
-│   │   ├── intelligent-query-system.json   # Consultas inteligentes (EN)
-│   │   ├── intelligent-query-system-es.json # Consultas inteligentes (ES)
-│   │   ├── sentiment-analysis-pipeline.json # (vacío - por completar)
-│   │   └── system-health-monitoring.json    # (vacío - por completar)
-│   │
-│   ├── credentials/                # Plantillas de credenciales
-│   │   ├── postgres-main.json              # PostgreSQL
-│   │   ├── redis-main.json                 # Redis
-│   │   ├── ollama-api.json                 # Ollama
-│   │   ├── flowise-api.json                # Flowise
-│   │   └── qdrant-api.json                 # Qdrant
-│   │
-│   └── custom/                     # Nodos y credenciales custom
-│       ├── tsconfig.json
-│       ├── credentials/
-│       │   └── OllamaApi.credentials.ts
-│       └── nodes/
-│           └── Ollama/
-│               └── Ollama.node.ts
+├── ollama/                    # Ollama
+│   ├── Dockerfile             # Imagen personalizada
+│   └── healthcheck.sh         # Health check
 │
-├── 🐳 Servicios Docker/            # Configuración de servicios
-│   ├── ollama/
-│   │   ├── Dockerfile
-│   │   └── healthcheck.sh
-│   │
-│   ├── floowise/
-│   │   ├── Dockerfile
-│   │   ├── healthcheck.sh
-│   │   ├── package.json
-│   │   ├── index.js
-│   │   ├── config.json
-│   │   └── components/
-│   │       ├── OllamaNode.js
-│   │       └── QdrantNode.js
-│   │
-│   ├── postgres/
-│   │   ├── Dockerfile
-│   │   └── init-scripts/
-│   │       ├── 00-init-users.sh
-│   │       ├── 01-init.sql
-│   │       └── 02-monitoring-schema.sql
-│   │
-│   ├── openwebui/
-│   ├── redis/
-│   └── qdrant/
+├── openwebui/                 # OpenWebUI (datos persistentes)
+├── redis/                     # Redis (datos persistentes)
+├── qdrant/                    # Qdrant (datos persistentes)
 │
-├── 🧪 tests/                       # Tests de integración
-│   ├── integration_test.sh         # Tests de integración
-│   ├── load_test.sh                # Tests de carga
-│   └── workflow_test.sh            # Tests de workflows
+├── docs/                      # Documentacion
+│   ├── README.md              # Indice de documentacion
+│   ├── QUICKSTART.md          # Guia rapida
+│   ├── PROJECT_STRUCTURE.md   # Este archivo
+│   ├── TROUBLESHOOTING.md     # Solucion de problemas
+│   ├── OLLAMA.md              # Configuracion Ollama
+│   ├── FLOOWISE.md            # Configuracion Flowise
+│   ├── INTEGRACIONES.md       # Integraciones
+│   ├── CONTRIBUTING.md        # Guia de contribucion
+│   ├── N8N_API_SETUP.md       # API n8n
+│   ├── REDIS_FIX.md           # Fix Redis
+│   ├── OLLAMA_URL_FIX.md      # Fix URL Ollama
+│   └── imagenes/              # Diagramas
 │
-├── 🔐 .github/                     # GitHub configuration
-│   ├── copilot-instructions.md     # Instrucciones para IA
-│   └── workflows/
-│       └── main.yml                # CI/CD (por configurar)
-│
-├── 🐋 .devcontainer/               # Dev Container para VS Code
-│   ├── devcontainer.json
-│   └── post-create.sh
-│
-└── 💾 Datos (gitignored)/          # Datos persistentes
-    ├── postgres/                   # Bases de datos PostgreSQL
-    │   └── data/                   # (ailab, n8n_db)
-    ├── redis/                      # Datos de Redis
-    ├── qdrant/                     # Vectores de Qdrant
-    ├── ollama/                     # Modelos de Ollama
-    ├── n8n/                        # Datos de n8n
-    ├── floowise/                   # Datos de Flowise
-    └── openwebui/                  # Datos de OpenWebUI
+├── config/                    # Configuraciones sensibles
+├── backups/                   # Respaldos de datos
+├── tests/                     # Tests de integracion
+└── .github/                   # CI/CD y templates
+    └── workflows/main.yml     # Validacion CI
 ```
 
-## 📊 Estadísticas del Proyecto
+## Servicios Docker
 
-| Categoría | Cantidad |
-|-----------|----------|
-| **Archivos de configuración** | 8 |
-| **Scripts bash** | 11 |
-| **Workflows n8n** | 7 (5 completos) |
-| **Credenciales** | 5 |
-| **Servicios Docker** | 7 |
-| **Archivos de documentación** | 14 |
-| **Tests** | 3 |
-| **Componentes custom** | 2 (Ollama, Qdrant) |
+| Servicio | Imagen | Puerto Host | Dependencias |
+|----------|--------|-------------|-------------|
+| redis | redis:alpine | 6380 | - |
+| postgres | postgres:16-alpine | 5432 | - |
+| qdrant | qdrant/qdrant:latest | 6333 | - |
+| ollama | ollama/ollama:latest | 11434 | - |
+| openwebui | ghcr.io/open-webui/open-webui:latest | 8080 | ollama |
+| n8n | docker.n8n.io/n8nio/n8n:latest | 5678 | postgres, redis |
+| floowise | laboratorioai-floowise (build) | 3000 | postgres, qdrant, ollama, redis |
 
-## 🎨 Convenciones de Nombres
+## Redes
 
-### Archivos
-- **Configuración**: `kebab-case.yml`, `kebab-case.json`
-- **Scripts**: `kebab-case.sh`
-- **Documentación**: `SCREAMING_SNAKE_CASE.md`
-- **Código**: `camelCase.js`, `camelCase.ts`
+- `laboratorio_ai` (bridge) - Todos los servicios conectados
 
-### Directorios
-- **Lowercase**: `scripts/`, `docs/`, `tests/`
-- **Servicios**: Nombre del servicio (`ollama/`, `n8n/`)
+## Volumenes
 
-### Variables de Entorno
-- **SCREAMING_SNAKE_CASE**: `DB_POSTGRESDB_DATABASE`
-- **Prefijo por servicio**: `N8N_*`, `FLOWISE_*`, `REDIS_*`
-
-## 🔗 Enlaces Rápidos
-
-- **Repositorio**: https://github.com/EdissonGirald0/laboratorioAI
-- **Issues**: https://github.com/EdissonGirald0/laboratorioAI/issues
-- **Wiki**: (por crear)
-- **Releases**: https://github.com/EdissonGirald0/laboratorioAI/releases
-
-## 📝 Notas
-
-- ✅ Todos los datos persistentes están en `.gitignore`
-- ✅ Credenciales generadas automáticamente
-- ✅ Estructura modular y escalable
-- ✅ Documentación completa en español
-- ✅ Scripts con validación y error handling
-
----
-
-*Última actualización: 12 de octubre de 2025*
+Datos persistentes en directorios locales:
+- `postgres/data/` → `/var/lib/postgresql`
+- `redis/data/` → `/data`
+- `qdrant/data/` → `/qdrant/storage`
+- `ollama/data/` → `/root/.ollama`
+- `n8n/data/` → `/home/node/.n8n`
+- `floowise/data/` → `/root/.flowise`
+- `openwebui/data/` → `/app/data`
