@@ -1,0 +1,42 @@
+{
+  "name": "Monitoreo de Salud del Sistema",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "GET", "path": "health-check", "options": {} },
+      "id": "h1-1234",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "health-check-webhook"
+    },
+    {
+      "parameters": {
+        "functionCode": "const servicios = ['http://ollama:11434/api/tags', 'http://qdrant:6333/health', 'http://redis:6379', 'http://floowise:3000', 'http://openwebui:8080'];\nconst nombres = ['Ollama', 'Qdrant', 'Redis', 'Flowise', 'OpenWebUI'];\nconst resultados = [];\n\nfor (let i = 0; i < servicios.length; i++) {\n  try {\n    const res = await this.helpers.httpRequest({ method: 'GET', url: servicios[i], timeout: 5000 });\n    resultados.push({ servicio: nombres[i], estado: 'saludable', codigo: 200 });\n  } catch(e) {\n    resultados.push({ servicio: nombres[i], estado: 'caído', error: e.message });\n  }\n}\n\nconst saludables = resultados.filter(r => r.estado === 'saludable').length;\nreturn resultados.map(r => ({ json: { ...r, total: servicios.length, saludables, timestamp: new Date().toISOString() } }));"
+      },
+      "id": "h2-2345",
+      "name": "Verificar Servicios",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { \"estado_general\": $json.saludables === $json.total ? 'saludable' : 'degradado', \"servicios_saludables\": $json.saludables, \"total_servicios\": $json.total, \"detalle\": $input.all().map(i => i.json) } }}"
+      },
+      "id": "h3-3456",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [650, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Verificar Servicios", "type": "main", "index": 0 }]] },
+    "Verificar Servicios": { "main": [[{ "node": "Responder", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": ["monitoreo", "infraestructura"],
+  "triggerCount": 0
+}

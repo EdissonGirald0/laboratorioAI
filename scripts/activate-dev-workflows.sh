@@ -1,7 +1,4 @@
 #!/bin/bash
-
-# Script simple para activar workflows en n8n vía API
-
 set +e
 
 GREEN='\033[0;32m'
@@ -11,7 +8,7 @@ BLUE='\033[0;34m'
 NC='\033[0m'
 
 echo -e "${BLUE}╔═══════════════════════════════════════════════════════════╗${NC}"
-echo -e "${BLUE}║      ⚡ ACTIVACIÓN DE WORKFLOWS - MÉTODO SIMPLE ⚡       ║${NC}"
+echo -e "${BLUE}║      ⚡ ACTIVACIÓN DE WORKFLOWS — n8n ⚡                 ║${NC}"
 echo -e "${BLUE}╚═══════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
@@ -21,87 +18,73 @@ API_KEY=$(cat ./config/.n8n_api_key 2>/dev/null)
 
 if [ -z "$API_KEY" ]; then
     echo -e "${RED}❌ No se encontró API Key${NC}"
+    echo "Ejecuta primero: ./scripts/setup-n8n-complete.sh"
     exit 1
 fi
 
-echo -e "${GREEN}✅ API Key encontrada${NC}"
-echo ""
-
-# Activar workflow por ID usando el endpoint correcto
 activate_workflow() {
     local workflow_id="$1"
     local workflow_name="$2"
-    
     echo -e "${YELLOW}Activando: $workflow_name${NC}"
-    
-    # Usar el endpoint específico de activación: POST /workflows/{id}/activate
     local response=$(curl -s -X POST \
         -H "X-N8N-API-KEY: $API_KEY" \
         "$N8N_API_BASE/workflows/$workflow_id/activate" 2>&1)
-    
-    if echo "$response" | jq -e '.active == true' > /dev/null 2>&1; then
-        echo -e "${GREEN}  ✅ Activado exitosamente${NC}"
+    if echo "$response" | grep -q '"active":true'; then
+        echo -e "${GREEN}  ✅ Activado${NC}"
         return 0
     else
-        local error_msg=$(echo "$response" | jq -r '.message' 2>/dev/null || echo "Unknown")
-        echo -e "${RED}  ❌ Error: $error_msg${NC}"
+        echo -e "${RED}  ❌ Error${NC}"
         return 1
     fi
 }
 
-echo -e "${BLUE}📋 Obteniendo workflows...${NC}"
-echo ""
-
-# Obtener todos los workflows
 workflows=$(curl -s -H "X-N8N-API-KEY: $API_KEY" "$N8N_API_BASE/workflows")
 
-# Workflows de desarrollo
 dev_workflow_names=(
-    "Code Review Assistant"
-    "Git Commit Message Generator"
-    "Bug Report Analyzer"
-    "API Documentation Generator"
-    "Test Case Generator"
+    "Revisor de Código"
+    "Generador de Commits Git"
+    "Analizador de Bugs"
+    "Generador de Documentación API"
+    "Generador de Pruebas"
+    "Chatbot con Memoria"
+    "Procesador de Documentos"
+    "Automatización de Documentos"
+    "Sistema de Consultas Inteligentes"
+    "Análisis de Sentimientos"
+    "Monitoreo de Salud del Sistema"
 )
 
-activated=0
-errors=0
+activados=0
+errores=0
 
 for name in "${dev_workflow_names[@]}"; do
-    # Buscar el ID del workflow
-    id=$(echo "$workflows" | jq -r ".data[] | select(.name == \"$name\") | .id" | head -1)
-    
+    id=$(echo "$workflows" | jq -r ".data[] | select(.name == \"$name\") | .id" 2>/dev/null | head -1)
     if [ -n "$id" ] && [ "$id" != "null" ]; then
         if activate_workflow "$id" "$name"; then
-            activated=$((activated + 1))
+            activados=$((activados + 1))
         else
-            errors=$((errors + 1))
+            errores=$((errores + 1))
         fi
     else
         echo -e "${YELLOW}⚠️  No encontrado: $name${NC}"
-        errors=$((errors + 1))
+        errores=$((errores + 1))
     fi
 done
 
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${GREEN}📊 RESUMEN:${NC}"
-echo -e "  ✅ Activados: $activated"
-echo -e "  ❌ Errores: $errors"
+echo -e "${GREEN}✅ Activados: $activados  ❌ Errores: $errores${NC}"
 echo ""
+echo -e "${BLUE}🔗 Webhooks disponibles:${NC}"
+echo -e "  ${GREEN}http://localhost:5678/webhook/code-review${NC}       → Revisor de Código"
+echo -e "  ${GREEN}http://localhost:5678/webhook/git-commit${NC}        → Generador de Commits"
+echo -e "  ${GREEN}http://localhost:5678/webhook/bug-report${NC}        → Analizador de Bugs"
+echo -e "  ${GREEN}http://localhost:5678/webhook/generate-api-docs${NC} → Documentación API"
+echo -e "  ${GREEN}http://localhost:5678/webhook/generate-tests${NC}    → Generador de Pruebas"
+echo -e "  ${GREEN}http://localhost:5678/webhook/chat${NC}              → Chatbot con Memoria"
+echo -e "  ${GREEN}http://localhost:5678/webhook/process-document${NC}  → Procesador de Docs"
+echo -e "  ${GREEN}http://localhost:5678/webhook/sentiment${NC}         → Análisis de Sentimientos"
+echo -e "  ${GREEN}http://localhost:5678/webhook/query${NC}             → Consultas Inteligentes"
+echo -e "  ${GREEN}http://localhost:5678/webhook/health-check${NC}      → Salud del Sistema"
 
-if [ $activated -gt 0 ]; then
-    echo -e "${GREEN}✅ Webhooks disponibles en:${NC}"
-    echo -e "  ${BLUE}http://localhost:5678/webhook/code-review${NC}"
-    echo -e "  ${BLUE}http://localhost:5678/webhook/git-commit${NC}"
-    echo -e "  ${BLUE}http://localhost:5678/webhook/bug-report${NC}"
-    echo -e "  ${BLUE}http://localhost:5678/webhook/generate-api-docs${NC}"
-    echo -e "  ${BLUE}http://localhost:5678/webhook/generate-tests${NC}"
-    echo ""
-    echo -e "${YELLOW}Prueba con:${NC}"
-    echo -e "  ${BLUE}./scripts/dev-tools/code-review.sh README.md${NC}"
-fi
-
-echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-
-exit $errors
+exit $errores

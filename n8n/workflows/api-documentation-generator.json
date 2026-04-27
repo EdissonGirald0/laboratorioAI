@@ -1,14 +1,10 @@
 {
-  "name": "API Documentation Generator",
+  "name": "Generador de Documentación API",
   "nodes": [
     {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "generate-api-docs",
-        "options": {}
-      },
-      "id": "e7f8a9b0-1234-56ab-cdef-890abcdef012",
-      "name": "Webhook - API Endpoints",
+      "parameters": { "httpMethod": "POST", "path": "generate-api-docs", "options": {} },
+      "id": "d1-1234",
+      "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [250, 300],
@@ -17,134 +13,37 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:11434/generate",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBasicAuth",
+        "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            {
-              "name": "model",
-              "value": "codellama"
-            },
-            {
-              "name": "prompt",
-              "value": "=Genera documentación completa de API en formato OpenAPI 3.0 para el siguiente endpoint:\n\nMétodo: {{ $json.method }}\nRuta: {{ $json.path }}\nDescripción: {{ $json.description }}\n\nCódigo del controller:\n```\n{{ $json.code }}\n```\n\nGenera:\n1. Especificación OpenAPI 3.0 completa\n2. Descripción detallada del endpoint\n3. Parámetros de entrada (query, path, body)\n4. Respuestas posibles (200, 400, 404, 500)\n5. Ejemplos de request/response\n6. Esquemas de datos\n7. Autenticación requerida\n8. Rate limiting\n9. Deprecated warnings si aplica"
-            },
-            {
-              "name": "stream",
-              "value": false
-            }
+            { "name": "model", "value": "gemma4:latest" },
+            { "name": "prompt", "value": "=Genera documentación de API en español para el siguiente endpoint:\n\nEndpoint: {{ $json.endpoint }}\nMétodo: {{ $json.metodo }}\nParámetros: {{ $json.params }}\nRespuesta: {{ $json.response }}\n\nIncluye:\n1. Descripción del endpoint\n2. Método HTTP\n3. Parámetros (query, body, headers)\n4. Ejemplo de request\n5. Ejemplo de response\n6. Códigos de error posibles\n7. Notas de uso\n\nFormato: Markdown y especificación OpenAPI." },
+            { "name": "stream", "value": false }
           ]
         },
         "options": {}
       },
-      "id": "f8a9b0c1-2345-67ab-cdef-90abcdef0123",
-      "name": "Generate OpenAPI Spec",
+      "id": "d2-2345",
+      "name": "Generar Docs",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [450, 300],
-      "credentials": {
-        "httpBasicAuth": {
-          "id": "ollama-api",
-          "name": "Ollama API"
-        }
-      }
+      "position": [450, 300]
     },
     {
-      "parameters": {
-        "jsCode": "const spec = $input.item.json.response;\nconst endpoint = $('Webhook - API Endpoints').item.json;\n\n// Intentar parsear como YAML/JSON\nlet parsedSpec = {};\ntry {\n  // Extraer el bloque YAML/JSON del response\n  const match = spec.match(/```(?:yaml|json)?\\n([\\s\\S]+?)\\n```/);\n  if (match) {\n    const specText = match[1];\n    parsedSpec = JSON.parse(specText);\n  }\n} catch (e) {\n  // Si falla el parsing, usar el texto completo\n  parsedSpec = { raw: spec };\n}\n\nreturn {\n  json: {\n    method: endpoint.method,\n    path: endpoint.path,\n    documentation: spec,\n    openApiSpec: parsedSpec,\n    version: '3.0.0',\n    timestamp: new Date().toISOString()\n  }\n};"
-      },
-      "id": "a9b0c1d2-3456-78ab-cdef-1234567890ab",
-      "name": "Parse OpenAPI Spec",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [650, 300]
-    },
-    {
-      "parameters": {
-        "operation": "insert",
-        "schema": "public",
-        "table": "api_documentation",
-        "columns": "method, path, documentation, openapi_spec, version, created_at",
-        "additionalFields": {}
-      },
-      "id": "b0c1d2e3-4567-89ab-cdef-234567890abc",
-      "name": "Save Documentation",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.2,
-      "position": [850, 300],
-      "credentials": {
-        "postgres": {
-          "id": "postgres-main",
-          "name": "PostgreSQL Main"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ $json }}"
-      },
-      "id": "c1d2e3f4-5678-90ab-cdef-34567890abcd",
-      "name": "Return Documentation",
+      "parameters": { "respondWith": "json", "responseBody": "={{ { \"status\": \"exito\", \"documentacion\": $json.response } }}" },
+      "id": "d3-3456",
+      "name": "Responder",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1050, 300]
+      "position": [650, 300]
     }
   ],
   "connections": {
-    "Webhook - API Endpoints": {
-      "main": [
-        [
-          {
-            "node": "Generate OpenAPI Spec",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generate OpenAPI Spec": {
-      "main": [
-        [
-          {
-            "node": "Parse OpenAPI Spec",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Parse OpenAPI Spec": {
-      "main": [
-        [
-          {
-            "node": "Save Documentation",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save Documentation": {
-      "main": [
-        [
-          {
-            "node": "Return Documentation",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
+    "Webhook": { "main": [[{ "node": "Generar Docs", "type": "main", "index": 0 }]] },
+    "Generar Docs": { "main": [[{ "node": "Responder", "type": "main", "index": 0 }]] }
   },
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2025-10-12T00:00:00.000Z",
-  "versionId": "1"
+  "settings": { "executionOrder": "v1" },
+  "tags": ["ia", "documentacion", "api"],
+  "triggerCount": 0
 }

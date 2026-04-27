@@ -1,226 +1,99 @@
 {
-  "name": "AI Chatbot with Memory",
+  "name": "Chatbot con Memoria",
   "nodes": [
     {
-      "parameters": {
-        "path": "/chat",
-        "options": {}
-      },
+      "parameters": { "path": "/chat", "options": {} },
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        250,
-        300
-      ]
+      "position": [250, 300]
     },
     {
       "parameters": {
         "operation": "get",
         "url": "http://qdrant:6333/collections/chat_history/points/search",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "api-key",
-              "value": "={{$env.N8N_QDRANT_API_KEY}}"
-            }
-          ]
-        },
+        "headerParameters": { "parameters": [{ "name": "api-key", "value": "={{$env.N8N_QDRANT_API_KEY}}" }] },
         "sendBody": true,
         "bodyParameters": {
-          "filter": {
-            "must": [
-              {
-                "key": "session_id",
-                "match": {
-                  "value": "={{$node.Webhook.json.session_id}}"
-                }
-              }
-            ]
-          },
-          "limit": 10
+          "vector": "={{$node.Webhook.json.question}}",
+          "limit": 10,
+          "with_payload": true
         },
         "options": {}
       },
-      "name": "Get Chat History",
+      "name": "Buscar Historial",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [
-        450,
-        300
-      ]
+      "position": [450, 300]
     },
     {
       "parameters": {
-        "functionCode": "// Construir el contexto del chat\nconst history = $input.all()[0].json.result || [];\nlet context = 'Chat History:\\n';\n\nhistory.forEach((msg, index) => {\n  context += `${msg.payload.role}: ${msg.payload.content}\\n`;\n});\n\ncontext += `\\nCurrent question: ${$input.all()[1].json.question}`;\n\nreturn {context};"
+        "functionCode": "const historial = $input.all()[0].json.result || [];\nlet contexto = 'Historial de la conversación:\\n';\nhistorial.forEach(m => { contexto += `${m.payload?.role || 'usuario'}: ${m.payload?.content || ''}\\n`; });\ncontexto += `\\nPregunta actual: ${$input.all()[1].json.question}`;\nreturn { contexto };\n"
       },
-      "name": "Prepare Context",
+      "name": "Preparar Contexto",
       "type": "n8n-nodes-base.function",
       "typeVersion": 1,
-      "position": [
-        650,
-        300
-      ]
+      "position": [650, 300]
     },
     {
       "parameters": {
-        "url": "http://floowise:3000/api/process",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "x-api-key",
-              "value": "={{$env.N8N_FLOOWISE_API_KEY}}"
-            }
-          ]
-        },
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "bodyParameters": {
-          "text": "={{$node.Prepare Context.json.context}}",
-          "model": "mistral",
-          "options": {
-            "temperature": 0.7,
-            "max_tokens": 500
-          }
+          "parameters": [
+            { "name": "model", "value": "gemma4:latest" },
+            { "name": "prompt", "value": "={{ $node['Preparar Contexto'].json.contexto }}" },
+            { "name": "stream", "value": false }
+          ]
         },
         "options": {}
       },
-      "name": "Generate Response",
+      "name": "Generar Respuesta",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "position": [
-        850,
-        300
-      ]
+      "typeVersion": 4.1,
+      "position": [850, 300]
     },
     {
       "parameters": {
+        "method": "PUT",
         "url": "http://qdrant:6333/collections/chat_history/points",
         "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "api-key",
-              "value": "={{$env.N8N_QDRANT_API_KEY}}"
-            }
-          ]
-        },
+        "headerParameters": { "parameters": [{ "name": "api-key", "value": "={{$env.N8N_QDRANT_API_KEY}}" }] },
         "sendBody": true,
         "bodyParameters": {
           "points": [
-            {
-              "payload": {
-                "session_id": "={{$node.Webhook.json.session_id}}",
-                "role": "user",
-                "content": "={{$node.Webhook.json.question}}",
-                "timestamp": "={{$now}}"
-              }
-            },
-            {
-              "payload": {
-                "session_id": "={{$node.Webhook.json.session_id}}",
-                "role": "assistant",
-                "content": "={{$node.Generate Response.json.response}}",
-                "timestamp": "={{$now}}"
-              }
-            }
+            { "id": "={{ $now + '-user' }}", "payload": { "sesion_id": "={{$node.Webhook.json.session_id}}", "rol": "usuario", "contenido": "={{$node.Webhook.json.question}}" } },
+            { "id": "={{ $now + '-assistant' }}", "payload": { "sesion_id": "={{$node.Webhook.json.session_id}}", "rol": "asistente", "contenido": "={{$node['Generar Respuesta'].json.response}}" } }
           ]
         },
         "options": {}
       },
-      "name": "Store Chat History",
+      "name": "Guardar Historial",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 1,
-      "position": [
-        1050,
-        300
-      ]
+      "position": [1050, 300]
     },
     {
       "parameters": {
         "respondWith": "json",
-        "responseBody": {
-          "response": "={{$node.Generate Response.json.response}}",
-          "session_id": "={{$node.Webhook.json.session_id}}"
-        }
+        "responseBody": { "respuesta": "={{$node['Generar Respuesta'].json.response}}", "sesion_id": "={{$node.Webhook.json.session_id}}" }
       },
-      "name": "Respond",
+      "name": "Responder",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        1250,
-        300
-      ]
+      "position": [1250, 300]
     }
   ],
   "connections": {
-    "Webhook": {
-      "main": [
-        [
-          {
-            "node": "Get Chat History",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Get Chat History": {
-      "main": [
-        [
-          {
-            "node": "Prepare Context",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Prepare Context": {
-      "main": [
-        [
-          {
-            "node": "Generate Response",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generate Response": {
-      "main": [
-        [
-          {
-            "node": "Store Chat History",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Store Chat History": {
-      "main": [
-        [
-          {
-            "node": "Respond",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
+    "Webhook": { "main": [[{ "node": "Buscar Historial", "type": "main", "index": 0 }]] },
+    "Buscar Historial": { "main": [[{ "node": "Preparar Contexto", "type": "main", "index": 0 }]] },
+    "Preparar Contexto": { "main": [[{ "node": "Generar Respuesta", "type": "main", "index": 0 }]] },
+    "Generar Respuesta": { "main": [[{ "node": "Guardar Historial", "type": "main", "index": 0 }]] },
+    "Guardar Historial": { "main": [[{ "node": "Responder", "type": "main", "index": 0 }]] }
   },
-  "active": true,
-  "settings": {
-    "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "all",
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner"
-  },
-  "tags": [
-    "ai",
-    "chatbot"
-  ],
+  "settings": { "saveDataErrorExecution": "all", "saveDataSuccessExecution": "all", "saveManualExecutions": true, "callerPolicy": "workflowsFromSameOwner" },
+  "tags": ["ia", "chatbot", "memoria"],
   "triggerCount": 1
 }

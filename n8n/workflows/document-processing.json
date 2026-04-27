@@ -1,136 +1,66 @@
 {
-  "name": "AI Document Processing",
+  "name": "Procesador de Documentos",
   "nodes": [
     {
-      "parameters": {
-        "path": "/process-document",
-        "options": {}
-      },
+      "parameters": { "httpMethod": "POST", "path": "process-document", "options": {} },
+      "id": "dp1",
       "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
-      "position": [
-        250,
-        300
-      ]
+      "position": [250, 300],
+      "webhookId": "process-doc-webhook"
     },
     {
       "parameters": {
-        "url": "={{$node.Webhook.json.url}}",
-        "options": {}
-      },
-      "name": "HTTP Request",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "position": [
-        450,
-        300
-      ]
-    },
-    {
-      "parameters": {
-        "url": "http://floowise:3000/api/process",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "x-api-key",
-              "value": "={{$env.N8N_FLOOWISE_API_KEY}}"
-            }
-          ]
-        },
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "bodyParameters": {
-          "text": "={{$node.HTTP Request.json.text}}",
-          "model": "mistral"
+          "parameters": [
+            { "name": "model", "value": "gemma4:latest" },
+            { "name": "prompt", "value": "=Procesa el siguiente documento y genera un análisis en español:\n\nDocumento:\n{{ $json.contenido }}\n\nMetadatos: {{ $json.metadata }}\n\nProporciona:\n1. Resumen ejecutivo (2-3 párrafos)\n2. Puntos clave (5-7 bullets)\n3. Entidades mencionadas\n4. Sentimiento general\n5. Temas principales\n6. Recomendaciones" },
+            { "name": "stream", "value": false }
+          ]
         },
         "options": {}
       },
-      "name": "Floowise Process",
+      "id": "dp2",
+      "name": "Procesar Documento",
       "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "position": [
-        650,
-        300
-      ]
+      "typeVersion": 4.1,
+      "position": [450, 300]
     },
     {
       "parameters": {
-        "url": "http://qdrant:6333/collections/documents/points",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "api-key",
-              "value": "={{$env.N8N_QDRANT_API_KEY}}"
-            }
+        "assignments": {
+          "assignments": [
+            { "name": "analisis", "value": "={{ $json.response }}", "type": "string" },
+            { "name": "tipo", "value": "={{ $json.metadata?.tipo || 'documento' }}", "type": "string" },
+            { "name": "timestamp", "value": "={{ $now }}", "type": "string" }
           ]
-        },
-        "sendBody": true,
-        "bodyParameters": {
-          "vector": "={{$node.Floowise Process.json.embedding}}",
-          "payload": {
-            "text": "={{$node.HTTP Request.json.text}}",
-            "metadata": "={{$node.HTTP Request.json.metadata}}",
-            "processed_text": "={{$node.Floowise Process.json.response}}"
-          }
-        },
-        "options": {}
+        }
       },
-      "name": "Qdrant Store",
-      "type": "n8n-nodes-base.httpRequest",
+      "id": "dp3",
+      "name": "Formatear",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": { "respondWith": "json", "responseBody": "={{ { \"status\": \"exito\", \"analisis\": $json.analisis, \"tipo\": $json.tipo } }}" },
+      "id": "dp4",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [
-        850,
-        300
-      ]
+      "position": [850, 300]
     }
   ],
   "connections": {
-    "Webhook": {
-      "main": [
-        [
-          {
-            "node": "HTTP Request",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "HTTP Request": {
-      "main": [
-        [
-          {
-            "node": "Floowise Process",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Floowise Process": {
-      "main": [
-        [
-          {
-            "node": "Qdrant Store",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
+    "Webhook": { "main": [[{ "node": "Procesar Documento", "type": "main", "index": 0 }]] },
+    "Procesar Documento": { "main": [[{ "node": "Formatear", "type": "main", "index": 0 }]] },
+    "Formatear": { "main": [[{ "node": "Responder", "type": "main", "index": 0 }]] }
   },
-  "active": true,
-  "settings": {
-    "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "all",
-    "saveManualExecutions": true,
-    "callerPolicy": "workflowsFromSameOwner"
-  },
-  "tags": [
-    "ai",
-    "document-processing"
-  ],
-  "triggerCount": 1
+  "settings": { "executionOrder": "v1" },
+  "tags": ["ia", "documentos", "nlp"],
+  "triggerCount": 0
 }

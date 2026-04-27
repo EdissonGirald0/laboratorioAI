@@ -1,0 +1,60 @@
+{
+  "name": "Análisis de Sentimientos",
+  "nodes": [
+    {
+      "parameters": { "httpMethod": "POST", "path": "sentiment", "options": {} },
+      "id": "s1-1234",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [250, 300],
+      "webhookId": "sentiment-webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://ollama:11434/api/generate",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            { "name": "model", "value": "gemma4:latest" },
+            { "name": "prompt", "value": "=Analiza el sentimiento del siguiente texto en español. Responde ÚNICAMENTE con un JSON válido:\n\nTexto: {{ $json.texto }}\n\nFormato de respuesta:\n{\n  \"sentimiento\": \"positivo|negativo|neutral\",\n  \"puntuacion\": 0.0-1.0,\n  \"emociones\": [\"alegría\", \"tristeza\", ...],\n  \"entidades\": [\"producto\", \"servicio\", ...],\n  \"resumen\": \"breve resumen del análisis\"\n}" },
+            { "name": "stream", "value": false }
+          ]
+        },
+        "options": {}
+      },
+      "id": "s2-2345",
+      "name": "Analizar Sentimiento",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [450, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "try {\n  const result = JSON.parse($input.item.json.response);\n  return { json: { ...result, texto_original: $input.item.json.response, timestamp: new Date().toISOString() } };\n} catch(e) {\n  return { json: { sentimiento: 'desconocido', puntuacion: 0, texto: $input.item.json.response, timestamp: new Date().toISOString() } };\n}"
+      },
+      "id": "s3-3456",
+      "name": "Parsear JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [650, 300]
+    },
+    {
+      "parameters": { "respondWith": "json", "responseBody": "={{ $json }}" },
+      "id": "s4-4567",
+      "name": "Responder",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [850, 300]
+    }
+  ],
+  "connections": {
+    "Webhook": { "main": [[{ "node": "Analizar Sentimiento", "type": "main", "index": 0 }]] },
+    "Analizar Sentimiento": { "main": [[{ "node": "Parsear JSON", "type": "main", "index": 0 }]] },
+    "Parsear JSON": { "main": [[{ "node": "Responder", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "tags": ["ia", "nlp", "sentiment"],
+  "triggerCount": 0
+}

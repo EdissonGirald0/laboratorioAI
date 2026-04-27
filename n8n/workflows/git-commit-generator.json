@@ -1,14 +1,10 @@
 {
-  "name": "Git Commit Message Generator",
+  "name": "Generador de Commits Git",
   "nodes": [
     {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "git-commit",
-        "options": {}
-      },
+      "parameters": { "httpMethod": "POST", "path": "git-commit", "options": {} },
       "id": "e5f6a7b8-9012-34ab-cdef-567890abcdef",
-      "name": "Webhook - Git Diff",
+      "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [250, 300],
@@ -17,69 +13,32 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:11434/generate",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBasicAuth",
+        "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            {
-              "name": "model",
-              "value": "codellama"
-            },
-            {
-              "name": "prompt",
-              "value": "=Genera un mensaje de commit convencional siguiendo el formato:\n\n<tipo>(<alcance>): <descripción>\n\n<cuerpo del mensaje>\n\nA partir del siguiente diff de git:\n\n```\n{{ $json.diff }}\n```\n\nTipos válidos: feat, fix, docs, style, refactor, perf, test, chore, ci, build\n\nProporciona:\n1. Mensaje de commit en formato convencional\n2. Lista de cambios principales\n3. Breaking changes si los hay\n4. Issues relacionados si se mencionan"
-            },
-            {
-              "name": "stream",
-              "value": false
-            }
+            { "name": "model", "value": "gemma4:latest" },
+            { "name": "prompt", "value": "=Genera un mensaje de commit convencional en español:\n\n<tipo>(<alcance>): <descripción>\n\n<cuerpo>\n\nA partir del siguiente diff:\n\n```\n{{ $json.diff }}\n```\n\nTipos: feat, fix, docs, style, refactor, perf, test, chore, ci, build\n\nProporciona:\n1. Mensaje en formato convencional\n2. Lista de cambios principales\n3. Breaking changes si hay\n4. Issues relacionados si se mencionan\n\nResponde solo el mensaje de commit." },
+            { "name": "stream", "value": false }
           ]
         },
         "options": {}
       },
       "id": "f6a7b8c9-0123-45ab-cdef-67890abcdef0",
-      "name": "Generate Commit Message",
+      "name": "Generar Mensaje",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [450, 300],
-      "credentials": {
-        "httpBasicAuth": {
-          "id": "ollama-api",
-          "name": "Ollama API"
-        }
-      }
+      "position": [450, 300]
     },
     {
       "parameters": {
-        "jsCode": "const response = $input.item.json.response;\n\n// Extraer componentes del mensaje\nconst lines = response.split('\\n');\nconst firstLine = lines[0];\n\n// Extraer tipo, alcance y descripción\nconst match = firstLine.match(/^(\\w+)(\\(([^)]+)\\))?:\\s*(.+)$/);\n\nlet type = 'feat';\nlet scope = '';\nlet description = firstLine;\n\nif (match) {\n  type = match[1];\n  scope = match[3] || '';\n  description = match[4];\n}\n\n// Extraer cuerpo del mensaje\nconst bodyStart = lines.findIndex(line => line.trim() === '') + 1;\nconst body = bodyStart > 0 ? lines.slice(bodyStart).join('\\n').trim() : '';\n\n// Detectar breaking changes\nconst hasBreakingChanges = response.toLowerCase().includes('breaking change');\n\nreturn {\n  json: {\n    commitMessage: response,\n    type: type,\n    scope: scope,\n    description: description,\n    body: body,\n    hasBreakingChanges: hasBreakingChanges,\n    timestamp: new Date().toISOString()\n  }\n};"
+        "jsCode": "const response = $input.item.json.response;\nconst lines = response.split('\\n').filter(l => l.trim());\nconst firstLine = lines[0] || response;\n\nconst match = firstLine.match(/^(\\w+)(\\(([^)]+)\\))?:\\s*(.+)$/);\nlet type = 'feat', scope = '', description = firstLine;\nif (match) { type = match[1]; scope = match[3] || ''; description = match[4]; }\n\nreturn {\n  json: {\n    mensaje: response,\n    tipo: type,\n    alcance: scope,\n    descripcion: description,\n    tieneBreakingChanges: response.toLowerCase().includes('breaking change'),\n    timestamp: new Date().toISOString()\n  }\n};"
       },
       "id": "a7b8c9d0-1234-56ab-cdef-7890abcdef01",
-      "name": "Parse Commit Message",
+      "name": "Parsear Mensaje",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [650, 300]
-    },
-    {
-      "parameters": {
-        "operation": "insert",
-        "schema": "public",
-        "table": "git_commits",
-        "columns": "type, scope, description, body, has_breaking_changes, commit_message, created_at",
-        "additionalFields": {}
-      },
-      "id": "b8c9d0e1-2345-67ab-cdef-890abcdef012",
-      "name": "Save Commit History",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.2,
-      "position": [850, 300],
-      "credentials": {
-        "postgres": {
-          "id": "postgres-main",
-          "name": "PostgreSQL Main"
-        }
-      }
     },
     {
       "parameters": {
@@ -87,64 +46,19 @@
         "responseBody": "={{ $json }}"
       },
       "id": "c9d0e1f2-3456-78ab-cdef-90abcdef0123",
-      "name": "Return Commit Message",
+      "name": "Responder",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1050, 300]
+      "position": [850, 300]
     }
   ],
   "connections": {
-    "Webhook - Git Diff": {
-      "main": [
-        [
-          {
-            "node": "Generate Commit Message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Generate Commit Message": {
-      "main": [
-        [
-          {
-            "node": "Parse Commit Message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Parse Commit Message": {
-      "main": [
-        [
-          {
-            "node": "Save Commit History",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save Commit History": {
-      "main": [
-        [
-          {
-            "node": "Return Commit Message",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
+    "Webhook": { "main": [[{ "node": "Generar Mensaje", "type": "main", "index": 0 }]] },
+    "Generar Mensaje": { "main": [[{ "node": "Parsear Mensaje", "type": "main", "index": 0 }]] },
+    "Parsear Mensaje": { "main": [[{ "node": "Responder", "type": "main", "index": 0 }]] }
   },
-  "settings": {
-    "executionOrder": "v1"
-  },
+  "settings": { "executionOrder": "v1" },
   "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2025-10-12T00:00:00.000Z",
-  "versionId": "1"
+  "tags": ["ia", "git", "desarrollo"],
+  "triggerCount": 0
 }

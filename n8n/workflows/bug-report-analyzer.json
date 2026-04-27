@@ -1,14 +1,10 @@
 {
-  "name": "Bug Report Analyzer",
+  "name": "Analizador de Bugs",
   "nodes": [
     {
-      "parameters": {
-        "httpMethod": "POST",
-        "path": "bug-report",
-        "options": {}
-      },
-      "id": "d0e1f2a3-4567-89ab-cdef-1234567890ab",
-      "name": "Webhook - Bug Report",
+      "parameters": { "httpMethod": "POST", "path": "bug-report", "options": {} },
+      "id": "b1-1234-5678",
+      "name": "Webhook",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [250, 300],
@@ -17,214 +13,53 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "http://host.docker.internal:11434/generate",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpBasicAuth",
+        "url": "http://ollama:11434/api/generate",
         "sendBody": true,
         "bodyParameters": {
           "parameters": [
-            {
-              "name": "model",
-              "value": "codellama"
-            },
-            {
-              "name": "prompt",
-              "value": "=Analiza el siguiente reporte de bug:\n\nTítulo: {{ $json.title }}\n\nDescripción:\n{{ $json.description }}\n\nPasos para reproducir:\n{{ $json.steps }}\n\nError esperado:\n{{ $json.expected }}\n\nError actual:\n{{ $json.actual }}\n\nStack trace (si hay):\n{{ $json.stackTrace }}\n\nProporciona:\n1. Severidad del bug (crítico, alto, medio, bajo)\n2. Categoría del bug (frontend, backend, database, api, ui/ux, performance, security)\n3. Posibles causas raíz\n4. Sugerencias de solución\n5. Tests necesarios para verificar el fix\n6. Estimación de tiempo para resolver (horas)\n7. Prioridad sugerida"
-            },
-            {
-              "name": "stream",
-              "value": false
-            }
+            { "name": "model", "value": "gemma4:latest" },
+            { "name": "prompt", "value": "=Eres un analizador de bugs experto. Analiza el siguiente reporte en español:\n\nTítulo: {{ $json.titulo }}\nDescripción: {{ $json.descripcion }}\nStacktrace: {{ $json.stacktrace }}\n\nProporciona:\n1. Causa raíz probable\n2. Severidad (baja/media/alta/crítica)\n3. Solución sugerida\n4. Archivos afectados\n5. Pasos para reproducir\n6. Pruebas para verificar la solución\n\nResponde en español con formato estructurado." },
+            { "name": "stream", "value": false }
           ]
         },
         "options": {}
       },
-      "id": "e1f2a3b4-5678-90ab-cdef-234567890abc",
-      "name": "Analyze Bug",
+      "id": "b2-2345-6789",
+      "name": "Analizar Bug",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.1,
-      "position": [450, 300],
-      "credentials": {
-        "httpBasicAuth": {
-          "id": "ollama-api",
-          "name": "Ollama API"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const analysis = $input.item.json.response;\nconst bugData = $('Webhook - Bug Report').item.json;\n\n// Extraer información del análisis\nconst severityMatch = analysis.match(/severidad[:\\s]*(crítico|alto|medio|bajo)/i);\nconst categoryMatch = analysis.match(/categoría[:\\s]*(frontend|backend|database|api|ui\\/ux|performance|security)/i);\nconst timeMatch = analysis.match(/(\\d+)\\s*horas?/i);\nconst priorityMatch = analysis.match(/prioridad[:\\s]*(crítica|alta|media|baja)/i);\n\nconst severity = severityMatch ? severityMatch[1].toLowerCase() : 'medio';\nconst category = categoryMatch ? categoryMatch[1].toLowerCase() : 'backend';\nconst estimatedHours = timeMatch ? parseInt(timeMatch[1]) : 4;\nconst priority = priorityMatch ? priorityMatch[1].toLowerCase() : 'media';\n\n// Asignar puntuación\nconst severityScore = {\n  'crítico': 10,\n  'alto': 7,\n  'medio': 5,\n  'bajo': 2\n};\n\nconst score = severityScore[severity] || 5;\n\nreturn {\n  json: {\n    title: bugData.title,\n    description: bugData.description,\n    analysis: analysis,\n    severity: severity,\n    category: category,\n    estimatedHours: estimatedHours,\n    priority: priority,\n    score: score,\n    timestamp: new Date().toISOString(),\n    status: 'open'\n  }\n};"
-      },
-      "id": "f2a3b4c5-6789-01ab-cdef-34567890abcd",
-      "name": "Parse Analysis",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [650, 300]
-    },
-    {
-      "parameters": {
-        "operation": "insert",
-        "schema": "public",
-        "table": "bug_reports",
-        "columns": "title, description, analysis, severity, category, estimated_hours, priority, score, status, created_at",
-        "additionalFields": {}
-      },
-      "id": "a3b4c5d6-7890-12ab-cdef-4567890abcde",
-      "name": "Save Bug Report",
-      "type": "n8n-nodes-base.postgres",
-      "typeVersion": 2.2,
-      "position": [850, 200],
-      "credentials": {
-        "postgres": {
-          "id": "postgres-main",
-          "name": "PostgreSQL Main"
-        }
-      }
-    },
-    {
-      "parameters": {
-        "conditions": {
-          "conditions": [
-            {
-              "id": "condition1",
-              "leftValue": "={{ $json.severity }}",
-              "rightValue": "crítico",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              }
-            },
-            {
-              "id": "condition2",
-              "leftValue": "={{ $json.severity }}",
-              "rightValue": "alto",
-              "operator": {
-                "type": "string",
-                "operation": "equals"
-              },
-              "combineOperation": "or"
-            }
-          ]
-        },
-        "options": {}
-      },
-      "id": "b4c5d6e7-8901-23ab-cdef-567890abcdef",
-      "name": "Is Critical/High",
-      "type": "n8n-nodes-base.if",
-      "typeVersion": 2,
-      "position": [850, 400]
+      "position": [450, 300]
     },
     {
       "parameters": {
         "assignments": {
           "assignments": [
-            {
-              "id": "alert-id",
-              "name": "alert",
-              "value": "=🚨 BUG CRÍTICO DETECTADO 🚨\n\nTítulo: {{ $json.title }}\nSeveridad: {{ $json.severity }}\nCategoría: {{ $json.category }}\nTiempo estimado: {{ $json.estimatedHours }}h\n\nAnálisis:\n{{ $json.analysis }}",
-              "type": "string"
-            }
+            { "name": "analisis", "value": "={{ $json.response }}", "type": "string" },
+            { "name": "timestamp", "value": "={{ $now }}", "type": "string" }
           ]
-        },
-        "options": {}
+        }
       },
-      "id": "c5d6e7f8-9012-34ab-cdef-67890abcdef0",
-      "name": "Create Alert",
+      "id": "b3-3456-7890",
+      "name": "Formatear",
       "type": "n8n-nodes-base.set",
       "typeVersion": 3.2,
-      "position": [1050, 350]
+      "position": [650, 300]
     },
     {
-      "parameters": {
-        "respondWith": "json",
-        "responseBody": "={{ $json }}"
-      },
-      "id": "d6e7f8a9-0123-45ab-cdef-7890abcdef01",
-      "name": "Return Analysis",
+      "parameters": { "respondWith": "json", "responseBody": "={{ { \"status\": \"exito\", \"analisis\": $json.analisis, \"timestamp\": $json.timestamp } }}" },
+      "id": "b4-4567-8901",
+      "name": "Responder",
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1,
-      "position": [1250, 300]
+      "position": [850, 300]
     }
   ],
   "connections": {
-    "Webhook - Bug Report": {
-      "main": [
-        [
-          {
-            "node": "Analyze Bug",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Analyze Bug": {
-      "main": [
-        [
-          {
-            "node": "Parse Analysis",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Parse Analysis": {
-      "main": [
-        [
-          {
-            "node": "Save Bug Report",
-            "type": "main",
-            "index": 0
-          },
-          {
-            "node": "Is Critical/High",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Save Bug Report": {
-      "main": [
-        [
-          {
-            "node": "Return Analysis",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Is Critical/High": {
-      "main": [
-        [
-          {
-            "node": "Create Alert",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Create Alert": {
-      "main": [
-        [
-          {
-            "node": "Return Analysis",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    }
+    "Webhook": { "main": [[{ "node": "Analizar Bug", "type": "main", "index": 0 }]] },
+    "Analizar Bug": { "main": [[{ "node": "Formatear", "type": "main", "index": 0 }]] },
+    "Formatear": { "main": [[{ "node": "Responder", "type": "main", "index": 0 }]] }
   },
-  "settings": {
-    "executionOrder": "v1"
-  },
-  "staticData": null,
-  "tags": [],
-  "triggerCount": 0,
-  "updatedAt": "2025-10-12T00:00:00.000Z",
-  "versionId": "1"
+  "settings": { "executionOrder": "v1" },
+  "tags": ["ia", "qa", "debugging"],
+  "triggerCount": 0
 }
