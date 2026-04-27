@@ -13,7 +13,7 @@
 
 ## Que es
 
-Laboratorio de Inteligencia Artificial local basado en Docker. Proporciona un entorno completo y aislado para experimentar con modelos de IA, automatizacion y procesamiento de datos.
+Laboratorio de Inteligencia Artificial local basado en Docker. Proporciona un entorno completo y aislado para experimentar con modelos de IA, automatización y procesamiento de datos.
 
 ## Inicio Rapido
 
